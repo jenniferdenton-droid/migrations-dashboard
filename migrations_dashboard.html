@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  :root {
+    color-scheme: light;
+    --navy: #1c2b4a;
+    --navy-2: #26385e;
+    --accent: #4f7cff;
+    --amber: #d97706;
+    --red: #dc2626;
+    --green: #16a34a;
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --border: #e2e6f0;
+    --text: #1a2033;
+    --sub: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+  }
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+  header {
+    background: var(--navy); color: white; padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+  header .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+  header .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  header .sync { font-size: 11.5px; color: rgba(255,255,255,.65); }
+  header .actions { display: flex; gap: 8px; align-items:center; }
+  button {
+    font-family: inherit; cursor: pointer; border-radius: 8px; border: 1px solid transparent;
+    padding: 8px 14px; font-size: 13px; font-weight: 600; transition: all .15s;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #3d68e8; }
+  .btn-ghost { background: rgba(255,255,255,.12); color: white; }
+  .btn-ghost:hover { background: rgba(255,255,255,.2); }
+  .btn-outline { background: white; border-color: var(--border); color: var(--text); }
+  .btn-outline:hover { background: #f0f2f8; }
+  .btn-outline.on { background: var(--navy); color: white; border-color: var(--navy); }
+  .btn-icon { padding: 6px 10px; }
+  nav.tabs {
+    display: flex; gap: 4px; background: var(--navy-2); padding: 0 20px;
+    overflow-x: auto;
+  }
+  nav.tabs button {
+    background: transparent; color: rgba(255,255,255,.65); border-radius: 0;
+    padding: 12px 16px; font-size: 13px; border-bottom: 3px solid transparent; white-space: nowrap;
+  }
+  nav.tabs button.active { color: white; border-bottom-color: var(--accent); }
+  nav.tabs button:hover { color: white; }
+  main { flex: 1; padding: 22px 24px 60px; max-width: 1560px; width: 100%; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  h1.page-title { font-size: 19px; margin: 0 0 4px; }
+  .page-sub { color: var(--sub); font-size: 13px; margin: 0 0 18px; }
+  .grid { display: grid; gap: 14px; }
+  .kpi-grid { grid-template-columns: repeat(6, 1fr); }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+  }
+  .kpi .label { font-size: 11.5px; color: var(--sub); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+  .kpi .value { font-size: 24px; font-weight: 700; }
+  .kpi .delta { font-size: 12px; margin-top: 4px; }
+  .delta.up { color: var(--red); } .delta.down { color: var(--green); } .delta.flat { color: var(--sub); }
+  .two-col { grid-template-columns: 2fr 1fr; margin-top: 16px; }
+  .three-col { grid-template-columns: 1fr 1fr 1fr; margin-top: 16px; }
+  .chart-wrap { height: 230px; position: relative; }
+  .chart-wrap.sm { height: 180px; }
+  .section-title { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
+  .section-sub { font-size: 11.5px; color: var(--sub); margin: 0 0 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--sub); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  td { padding: 9px 10px; border-bottom: 1px solid #eef0f6; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr.clickable:hover { background: #f7f9fd; cursor: pointer; }
+  tr.selected { background: #eef3ff; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space:nowrap; }
+  .badge-travel-req { background: #dcfce7; color: var(--green); }
+  .badge-travel-des { background: #fef3c7; color: var(--amber); }
+  .badge-travel-no { background: #f1f2f6; color: var(--sub); }
+  .badge-pushed { background: #fee2e2; color: var(--red); }
+  .badge-moved { background: #dcfce7; color: var(--green); }
+  .badge-flat { background: #f1f2f6; color: var(--sub); }
+  .badge-hold { background: #ffedd5; color: #9a3412; }
+  .badge-scrape { background: #ede9fe; color: #6d28d9; font-weight:800; }
+  .badge-outlier { background: #fee2e2; color: var(--red); }
+  .chip { display: inline-block; background: #eef1f8; border-radius: 6px; padding: 2px 8px; font-size: 11.5px; margin: 2px 4px 0 0; }
+  .avatar {
+    display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:5px;
+    font-size:9.5px; font-weight:800; color:white; flex:none;
+  }
+  .flag-banner {
+    background: #fff8ec; border: 1px solid #f4dfae; color: #8a5a00; padding: 10px 14px; border-radius: 10px; font-size: 12.5px; margin-bottom: 16px;
+  }
+  .footer-note { color: var(--sub); font-size: 12px; margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .dot-connected { background: var(--green); } .dot-pending { background: var(--amber); } .dot-none { background: #cbd0dd; }
+  textarea, input[type=text], input[type=date], select {
+    width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; margin-top: 6px;
+  }
+  a.hs-link { color: var(--accent); font-weight: 700; text-decoration: none; font-size: 12.5px; }
+  a.hs-link:hover { text-decoration: underline; }
+  .expand-row { background: #fbfcff; }
+  .expand-row td { padding: 14px 18px; }
+  .exp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 18px; margin-bottom: 10px; }
+  .exp-grid .k { font-size: 10.5px; color: var(--sub); text-transform: uppercase; }
+  .exp-grid .v { font-size: 12.5px; font-weight: 600; }
+
+  /* ===== CALENDAR ===== */
+  .cal-toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
+  .cal-filters { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
+  .cal-filters select { width:auto; margin-top:0; padding:6px 10px; font-size:12.5px; }
+  .cal-legend { display:flex; gap:12px; flex-wrap:wrap; align-items:center; font-size:11.5px; color:var(--sub); margin-bottom:14px; }
+  .cal-legend .item { display:flex; align-items:center; gap:5px; }
+  .cal-legend .sw { width:11px; height:11px; border-radius:3px; }
+  .cal-nav { display:flex; align-items:center; gap:10px; }
+  .cal-nav h2 { margin:0; font-size:16px; min-width:150px; text-align:center; }
+  .cal-main { display:grid; grid-template-columns: 1fr 300px; gap:16px; align-items:start; }
+  .cal-grid-wrap { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .cal-headrow { display:grid; grid-template-columns: repeat(7, 1fr) 160px; background:#f7f8fc; border-bottom:1px solid var(--border); }
+  .cal-headrow div { padding:8px 10px; font-size:11px; font-weight:700; color:var(--sub); text-transform:uppercase; }
+  .cal-week { display:grid; grid-template-columns: repeat(7, 1fr) 160px; border-bottom:1px solid var(--border); }
+  .cal-week:last-child { border-bottom:none; }
+  .cal-day {
+    border-right:1px solid #eef0f6; min-height:112px; padding:6px; position:relative; background:white;
+  }
+  .cal-day.other-month { background:#fafbfd; }
+  .cal-day .daynum { font-size:11.5px; color:var(--sub); font-weight:700; margin-bottom:4px; }
+  .cal-day.today .daynum { color:var(--accent); }
+  .cal-day.today { background:#eef3ff; }
+  .cal-card {
+    border-radius:6px; padding:3px 5px; margin-bottom:3px; font-size:10px;
+    font-weight:600; cursor:pointer; overflow:hidden;
+  }
+  .cal-card .row1 { display:flex; align-items:center; gap:4px; overflow:hidden; }
+  .cal-card .cname { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cal-card .row2 { font-size:9px; opacity:.8; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cal-more { font-size:10.5px; color:var(--sub); padding-left:4px; cursor:pointer; }
+  .cal-weeksum { padding:8px 10px; background:#f7f8fc; font-size:11px; color:var(--sub); }
+  .cal-weeksum b { color:var(--text); display:block; font-size:12.5px; margin-bottom:4px; }
+  .cal-weeksum .owner-row { display:flex; justify-content:space-between; }
+  .cal-side { display:flex; flex-direction:column; gap:14px; }
+  .side-panel { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; max-height:320px; overflow-y:auto; }
+  .side-panel .side-head { display:flex; justify-content:space-between; align-items:center; font-size:12.5px; font-weight:800; margin-bottom:8px; position:sticky; top:-13px; background:var(--card); padding-bottom:4px; }
+  .side-panel .side-head .count { background:#f1f2f6; border-radius:10px; padding:1px 8px; font-size:11px; }
+  .side-item { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #f2f3f8; cursor:pointer; }
+  .side-item:last-child { border-bottom:none; }
+  .side-item .si-name { font-size:12px; font-weight:700; }
+  .side-item .si-sub { font-size:10.5px; color:var(--sub); }
+  .side-updates .side-head { color:var(--navy); }
+  .side-noLaunch .side-head { color:#166534; }
+  .side-hold .side-head { color:#9a3412; }
+
+  /* ===== TRAVEL ===== */
+  .travel-month { margin-bottom:18px; }
+  .travel-month h3 { font-size:13.5px; margin:0 0 8px; color:var(--navy); }
+  .travel-row {
+    display:grid; grid-template-columns: 26px 1.2fr .9fr .8fr .8fr .8fr .8fr 1fr; gap:8px; align-items:center;
+    background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 12px; margin-bottom:6px; font-size:12px;
+  }
+  .travel-row.header { background:transparent; border:none; color:var(--sub); font-weight:700; text-transform:uppercase; font-size:10px; padding:0 12px; }
+  .travel-row input[type=text], .travel-row input[type=date] { margin:0; padding:5px 8px; font-size:11.5px; }
+
+  /* ===== CAPACITY (Float-style timeline) ===== */
+  .cap-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
+  .cap-timeline { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow-x:auto; }
+  .cap-tl-head { display:grid; grid-template-columns: 210px repeat(6, 1fr); border-bottom:1px solid var(--border); background:#f7f8fc; min-width:900px; }
+  .cap-tl-head div { padding:8px 10px; font-size:11px; font-weight:700; color:var(--sub); text-transform:uppercase; text-align:center; }
+  .cap-tl-head div:first-child { text-align:left; }
+  .cap-tl-row { display:grid; grid-template-columns: 210px repeat(6, 1fr); border-bottom:1px solid #eef0f6; min-width:900px; }
+  .cap-tl-row:last-child { border-bottom:none; }
+  .cap-tl-mgr { padding:10px; display:flex; align-items:center; gap:8px; border-right:1px solid var(--border); }
+  .cap-tl-mgr .m-name { font-weight:700; font-size:12.5px; }
+  .cap-tl-mgr .m-sub { font-size:10.5px; color:var(--sub); }
+  .cap-tl-cell { border-right:1px solid #f2f3f8; padding:6px; min-height:86px; display:flex; flex-direction:column; gap:2px; justify-content:flex-end; position:relative; }
+  .cap-tl-cell .wk-total { position:absolute; top:4px; left:6px; font-size:10px; font-weight:800; padding:1px 6px; border-radius:6px; }
+  .tot-ok { background:#dcfce7; color:var(--green); } .tot-warn { background:#fef3c7; color:var(--amber); } .tot-over { background:#fee2e2; color:var(--red); }
+  .cap-bar { border-radius:4px; font-size:9.5px; color:white; font-weight:700; padding:2px 5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; }
+  .cap-legend { display:flex; gap:12px; flex-wrap:wrap; font-size:11.5px; color:var(--sub); margin-top:10px; }
+  .cap-legend .item { display:flex; align-items:center; gap:5px; }
+  .cap-legend .sw { width:10px; height:10px; border-radius:3px; }
+
+  /* ===== Pipeline board ===== */
+  .board { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; overflow-x: auto; }
+  .col { background: #eef0f7; border-radius: 10px; padding: 10px; min-width: 190px; }
+  .col-head { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .ticket-card {
+    background: white; border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; margin-bottom: 8px; cursor: pointer;
+    transition: box-shadow .1s;
+  }
+  .ticket-card:hover { box-shadow: 0 2px 8px rgba(20,30,60,.1); }
+  .ticket-card .t-name { font-weight: 700; font-size: 12.5px; }
+  .ticket-card .t-meta { font-size: 11px; color: var(--sub); margin-top: 3px; }
+
+  /* ===== Modal ===== */
+  .overlay {
+    display: none; position: fixed; inset: 0; background: rgba(15,20,35,.45); z-index: 50;
+    align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto;
+  }
+  .overlay.active { display: flex; }
+  .modal { background: white; border-radius: 14px; width: 100%; max-width: 660px; padding: 22px 24px; }
+  .modal-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+  .modal-head h2 { margin: 0; font-size: 17px; }
+  .close-x { background: none; border: none; font-size: 18px; color: var(--sub); padding: 0 4px; }
+  .kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin: 14px 0; }
+  .kv-grid .k { font-size: 11px; color: var(--sub); text-transform: uppercase; }
+  .kv-grid .v { font-size: 13px; font-weight: 600; }
+  .task-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f1f6; }
+  .task-row:last-child { border-bottom: none; }
+  .task-row input[type=checkbox] { width: 16px; height: 16px; }
+  .task-row .t-title { font-size: 13px; font-weight: 600; flex: 1; }
+  .task-row .t-status { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .status-done { background: #dcfce7; color: var(--green); }
+  .status-progress { background: #fef3c7; color: var(--amber); }
+  .status-todo { background: #f1f2f6; color: var(--sub); }
+  .note-box { background: #f7f8fc; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; margin-top: 4px; color: #333; white-space:pre-wrap; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="brand"><span class="dot"></span> Moxie Migrations Dashboard</div>
+  <div class="sync" id="syncLabel"></div>
+  <div class="actions">
+    <button class="btn-ghost" id="refreshBtn">↻ Refresh from HubSpot / Calendar / Notion</button>
+    <button class="btn-primary" id="runAiBtn">▶ Run AI Capacity</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="main" class="active">Main Dashboard</button>
+  <button data-tab="calendar">Launch Calendar</button>
+  <button data-tab="travel">Travel</button>
+  <button data-tab="capacity">Manager Capacity</button>
+  <button data-tab="pipeline">Pipeline & Tasks</button>
+  <button data-tab="settings">Settings</button>
+</nav>
+
+<main>
+
+<div class="flag-banner" id="mockBanner">
+  Prototype view — populated with sample data so layout and logic can be reviewed before wiring up live HubSpot, Google Calendar, and Notion connections. Auto-refresh is set to run nightly at 12:00 AM ET once deployed (Vercel Cron) — this preview just shows a "last synced" timestamp for now.
+</div>
+
+<!-- MAIN DASHBOARD -->
+<div class="panel active" id="panel-main">
+  <h1 class="page-title">Main Dashboard</h1>
+  <p class="page-sub">Snapshot across all active migrations</p>
+
+  <div class="grid kpi-grid" id="kpiGrid"></div>
+
+  <div class="grid two-col">
+    <div class="card">
+      <div class="section-title">Launches per week & avg. complexity</div>
+      <div class="chart-wrap"><canvas id="weeklyChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-title">By segment</div>
+      <div class="chart-wrap"><canvas id="segmentChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="section-title">Migrations launching this month</div>
+    <div class="section-sub">Click a row to expand full ticket detail and open it in HubSpot</div>
+    <table>
+      <thead><tr><th></th><th>Client</th><th>Segment</th><th>Manager</th><th>Stage</th><th>Complexity</th><th>Launch date</th></tr></thead>
+      <tbody id="launchingMonthBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="section-title">Tickets by stage</div>
+    <div class="section-sub">Click a bar to filter the table below to that stage</div>
+    <div class="chart-wrap"><canvas id="stageChart"></canvas></div>
+    <table style="margin-top:14px;">
+      <thead><tr><th>Stage</th><th>Count</th><th>Total GMV</th><th>Segment mix</th></tr></thead>
+      <tbody id="stageSummaryBody"></tbody>
+    </table>
+    <div id="stageDrilldownWrap" style="display:none; margin-top:10px;">
+      <div class="section-title" id="stageDrilldownTitle" style="font-size:12.5px;"></div>
+      <table>
+        <thead><tr><th>Client</th><th>Segment</th><th>Manager</th><th>GMV</th><th>Complexity</th></tr></thead>
+        <tbody id="stageDrilldownBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid two-col" style="margin-top:16px;">
+    <div class="card">
+      <div class="section-title">Launch date changes (last 30 days)</div>
+      <table>
+        <thead><tr><th>Client</th><th>Manager</th><th>Change</th><th>Previous</th><th>New</th></tr></thead>
+        <tbody id="changeTableBody"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="section-title">GMV to launch, by Migrations Manager</div>
+      <table>
+        <thead><tr><th>Migrations Manager</th><th>Open tickets</th><th>GMV</th></tr></thead>
+        <tbody id="gmvTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid three-col">
+    <div class="card kpi">
+      <div class="label">Completed, last 30 days</div>
+      <div class="value" id="completed30"></div>
+      <div class="delta flat" id="completed30gmv"></div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Completed, last 60 days</div>
+      <div class="value" id="completed60"></div>
+      <div class="delta flat" id="completed60gmv"></div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Avg days to complete (all-time)</div>
+      <div class="value" id="avgDaysAll"></div>
+      <div class="delta flat">create date to migration_complete_date</div>
+    </div>
+  </div>
+
+  <div class="grid two-col" style="margin-top:16px;">
+    <div class="card">
+      <div class="section-title">Completed volume by segment — last 6 months</div>
+      <div class="chart-wrap sm"><canvas id="volumeTrendChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Completed GMV by segment — last 6 months</div>
+      <div class="chart-wrap sm"><canvas id="gmvTrendChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid two-col" style="margin-top:16px;">
+    <div class="card">
+      <div class="section-title">Avg days to complete — last 12 months</div>
+      <div class="chart-wrap sm"><canvas id="daysTrendChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Outlier managers (above average days-to-complete)</div>
+      <div class="section-sub" id="outlierAvgLabel"></div>
+      <table>
+        <thead><tr><th>Manager</th><th>Avg days</th><th>vs. team avg</th><th>Completed</th></tr></thead>
+        <tbody id="outlierBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="section-title">Avg days per phase (all-time)</div>
+    <div class="section-sub">Create date → Migration Scoping → Service Menu Mapping → Migration Complete</div>
+    <div class="chart-wrap sm"><canvas id="phaseChart"></canvas></div>
+  </div>
+</div>
+
+<!-- LAUNCH CALENDAR -->
+<div class="panel" id="panel-calendar">
+  <h1 class="page-title">Migration Launch Calendar</h1>
+  <p class="page-sub">Month view · sourced from HubSpot ticket pipeline</p>
+
+  <div class="cal-toolbar">
+    <div class="cal-filters">
+      <span style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;">Filters</span>
+      <select id="filterStage"><option value="all">Stage: All</option></select>
+      <select id="filterOwner"><option value="all">Ticket Owner: All</option></select>
+      <select id="filterSegment"><option value="all">Segment: All</option></select>
+      <select id="filterLifecycle">
+        <option value="all">Lifecycle: All</option>
+        <option value="Onboarding">Onboarding</option>
+        <option value="Pre-Launch">Pre-Launch</option>
+      </select>
+    </div>
+    <div class="cal-nav">
+      <button class="btn-outline btn-icon" id="calPrev">←</button>
+      <h2 id="calMonthLabel"></h2>
+      <button class="btn-outline btn-icon" id="calNext">→</button>
+      <button class="btn-outline" id="calToday">Today</button>
+    </div>
+  </div>
+
+  <div class="cal-legend" id="calLegend"></div>
+
+  <div class="cal-main">
+    <div class="cal-grid-wrap">
+      <div class="cal-headrow" id="calHeadRow"></div>
+      <div id="calBody"></div>
+    </div>
+    <div class="cal-side">
+      <div class="side-panel side-updates">
+        <div class="side-head"><span>Recent Updates (14d)</span><span class="count" id="recentUpdatesCount">0</span></div>
+        <div id="recentUpdatesList"></div>
+      </div>
+      <div class="side-panel side-noLaunch">
+        <div class="side-head"><span>No Launch Date</span><span class="count" id="noLaunchCount">0</span></div>
+        <div id="noLaunchList"></div>
+      </div>
+      <div class="side-panel side-hold">
+        <div class="side-head"><span>On Hold</span><span class="count" id="onHoldCount">0</span></div>
+        <div id="onHoldList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRAVEL -->
+<div class="panel" id="panel-travel">
+  <h1 class="page-title">Travel Requirements</h1>
+  <p class="page-sub">Required if $100K+ GMV or EMR not yet migrated per Notion EMR tracker · desired otherwise</p>
+  <div id="travelBody"></div>
+</div>
+
+<!-- CAPACITY -->
+<div class="panel" id="panel-capacity">
+  <h1 class="page-title">Migration Manager Capacity</h1>
+  <p class="page-sub">Target: ~40 hrs/week per manager · weighted by segment, EMR complexity, GMV, proximity to launch date, and travel days</p>
+
+  <div class="cap-toolbar">
+    <div class="section-title" style="margin:0;">Weekly workload timeline</div>
+    <div class="cap-legend" id="capLegendTop"></div>
+  </div>
+
+  <div class="cap-timeline">
+    <div class="cap-tl-head" id="capTlHead"></div>
+    <div id="capTlBody"></div>
+  </div>
+
+  <div class="grid two-col" style="grid-template-columns: 1fr;">
+    <div class="card" style="margin-top:16px;">
+      <div class="section-title">Unassigned Enterprise in onboarding</div>
+      <table>
+        <thead><tr><th>Client</th><th>Segment</th><th>EMR</th><th>Complexity</th><th>Launch date</th></tr></thead>
+        <tbody id="unassignedTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PIPELINE -->
+<div class="panel" id="panel-pipeline">
+  <h1 class="page-title">Pipeline & Tasks</h1>
+  <p class="page-sub">Mirrors the HubSpot ticket board · click any card to open tasks, notes, and ticket detail</p>
+  <div class="board" id="board"></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="panel" id="panel-settings">
+  <h1 class="page-title">Settings</h1>
+  <p class="page-sub">Access-controlled · manager roster, calendar onboarding, EMR complexity table</p>
+
+  <div class="card" style="margin-bottom:16px;">
+    <div class="section-title">Migration Manager Roster & Calendar Access</div>
+    <table>
+      <thead><tr><th>Name</th><th>Email</th><th>Calendar status</th><th>Action</th></tr></thead>
+      <tbody id="rosterTableBody"></tbody>
+    </table>
+    <button class="btn-outline" style="margin-top:10px;" id="addPersonBtn">+ Add person</button>
+  </div>
+
+  <div class="card">
+    <div class="section-title">EMR Confidence & Scraper Table (from Notion)</div>
+    <div class="section-sub">EMR matched to HubSpot Current EMR · not found here = treated as not yet migrated</div>
+    <table>
+      <thead><tr><th>System</th><th>Confidence level</th><th>Has scraper</th></tr></thead>
+      <tbody id="emrTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<div class="footer-note" style="max-width:1560px;margin:0 auto;padding:0 24px 30px;">
+  Field mapping reference — Companies: Medspa ID · MedSpa Name · Migrations Manager · Target Launch Date · Lifecycle Stage · Average L3M Revenue · Full Address. Tickets: Pipeline · Ticket status · Provider Segment (Pre-Launch) · Onboarding Manager Sync · Practice Success Manager · Ticket owner · Priority · Current EMR · Scope of Migration · Years Using EMR · Notes/Remarks · Migration Notes · Next Meeting Date · Migration Complexity Score · Migration Scoping Date · Service Menu Mapping Date · Migration Complete Date · Medspa ID. Companies and Tickets are joined on Medspa ID.
+</div>
+
+</div>
+
+<!-- Ticket Modal -->
+<div class="overlay" id="ticketOverlay">
+  <div class="modal" id="ticketModal"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script>
+(function(){
+
+// ================= REFERENCE DATA =================
+const SEGMENTS = ["Enterprise","Gold","Silver","Experienced","Growth","Beginner","No Segment"];
+const SEG_COLOR = {
+  "Enterprise":  {bg:"#fecaca", text:"#7f1d1d", dot:"#ef4444"},
+  "Gold":        {bg:"#fef9c3", text:"#713f12", dot:"#eab308"},
+  "Silver":      {bg:"#e2e8f0", text:"#334155", dot:"#94a3b8"},
+  "Experienced": {bg:"#dbeafe", text:"#1e3a8a", dot:"#3b82f6"},
+  "Growth":      {bg:"#bbf7d0", text:"#14532d", dot:"#22c55e"},
+  "Beginner":    {bg:"#f3e8ff", text:"#581c87", dot:"#a855f7"},
+  "No Segment":  {bg:"#e5e7eb", text:"#374151", dot:"#9ca3af"},
+};
+function segBadge(seg){
+  const c = SEG_COLOR[seg] || SEG_COLOR["No Segment"];
+  return `<span class="badge" style="background:${c.bg};color:${c.text}">${seg}</span>`;
+}
+function segDot(seg){ const c = SEG_COLOR[seg]||SEG_COLOR["No Segment"]; return `<span class="sw" style="background:${c.dot}"></span>`; }
+
+const STAGES = ["Migration Requested","Migration Scoping","Service Menu Mapping","Migration Prep & Testing",
+  "Client Migration Execution","Future Appointment Migration Execution","Credit Migration Execution",
+  "Past Appointment Migration Execution","All Other Data Migration","File Migration Execution",
+  "Internal Quality Review","Client Review","Reworking","Migration Complete","Closed - Churned/Canceled"];
+
+const AVATAR_COLORS = ["#f97316","#22c55e","#0ea5e9","#a855f7","#e11d48","#0d9488","#6366f1","#ca8a04"];
+function initialsOf(name){
+  if (!name) return "—";
+  const parts = name.trim().split(/\s+/);
+  return (parts[0][0] + (parts[1] ? parts[1][0] : "")).toUpperCase();
+}
+const avatarColorCache = {};
+let avatarColorIdx = 0;
+function avatarHtml(name){
+  if (!name) return `<span class="avatar" style="background:#cbd0dd">—</span>`;
+  if (!(name in avatarColorCache)) { avatarColorCache[name] = AVATAR_COLORS[avatarColorIdx % AVATAR_COLORS.length]; avatarColorIdx++; }
+  return `<span class="avatar" style="background:${avatarColorCache[name]}" title="${name}">${initialsOf(name)}</span>`;
+}
+
+// EMR Confidence + Scraper table — mirrors the Notion "Known EMR Systems & Nuances"
+// tracker (System / Confidence Level / Has Scraper columns). Any EMR NOT in this list
+// is treated as not-yet-migrated per your rule ("if not on the list at all, that's also
+// Confidence Level: not yet migrated").
+const NOTION_EMR_TABLE = [
+  {system:"Aesthetic Record", confidence:"Fully Confident", scraper:true},
+  {system:"Aesthetics Pro", confidence:"Fully Confident", scraper:true},
+  {system:"BLVD", confidence:"Fully Confident", scraper:true},
+  {system:"Booker", confidence:"Fully Confident", scraper:false},
+  {system:"Vagaro", confidence:"Fully Confident", scraper:true},
+  {system:"Mindbody", confidence:"Fully Confident", scraper:false},
+  {system:"Square", confidence:"Fully Confident", scraper:false},
+  {system:"Acuity", confidence:"Not Yet Migrated", scraper:false},
+  {system:"Jane", confidence:"Fully Confident", scraper:false},
+];
+function notionRow(emr){ return NOTION_EMR_TABLE.find(r=>r.system===emr); }
+function emrMigrated(emr){ const row = notionRow(emr); if (!row) return false; return row.confidence !== "Not Yet Migrated"; }
+function emrScraper(emr){ const row = notionRow(emr); return row ? row.scraper : false; }
+function emrConfidenceLabel(emr){ const row = notionRow(emr); return row ? row.confidence : "Not on Notion list — treated as Not Yet Migrated"; }
+
+const MANAGERS = [
+  {name:"Jordan Blake", email:"jordan.blake@joinmoxie.com", calStatus:"connected"},
+  {name:"Priya Anand", email:"priya.anand@joinmoxie.com", calStatus:"connected"},
+  {name:"Mary Ann Constante", email:"maryann.constante@joinmoxie.com", calStatus:"connected"},
+  {name:"Nico Duran", email:"nico.duran@joinmoxie.com", calStatus:"pending"},
+  {name:"Benedetto Palang", email:"benedetto.palang@joinmoxie.com", calStatus:"none"},
+];
+
+const today = new Date(2026, 6, 10); // Jul 10, 2026
+function dt(y,m,day){ return new Date(y,m,day); }
+function fmt(d){ return d ? d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "—"; }
+function ymd(d){ return d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}` : null; }
+function daysBetween(a,b){ if(!a||!b) return null; return Math.round((b-a)/86400000); }
+function hsUrl(hsId){ return `https://app.hubspot.com/contacts/22420370/record/0-5/${hsId}`; }
+
+// ================= TICKETS (sample data) =================
+// hsId = fabricated HubSpot record id, used only to build the "Open in HubSpot" link.
+const TICKETS = [
+  {id:"MX-1903", hsId:"44938471903", client:"Brown Suede Spa", medspaId:"1903", fullAddress:"1902 Airport Rd, Portland, OR 97218", segment:"Enterprise", emr:"Nextech", gmv:210000, complexity:7.8, manager:"Jordan Blake", ticketOwner:"Benedetto Palang", psm:"Leslie Nichols", stage:"Migration Prep & Testing", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,8), prevLaunch:dt(2026,6,8), changeLoggedDate:null, createDate:dt(2026,4,20), scopingDate:dt(2026,4,28), serviceMenuDate:dt(2026,5,15), completeDate:null, migrationNotes:"Client requested weekend support coverage.", notes:["Prep environment built, QA scheduled for 7/6."], mic:"Jordan Blake", psmAttendee:"Leslie Nichols", travelDates:{start:dt(2026,6,6),end:dt(2026,6,9)}},
+  {id:"MX-2119", hsId:"44938472119", client:"Meagan Reynolds Aesthetics", medspaId:"2119", fullAddress:"88 Congress St, Boston, MA 02110", segment:"Silver", emr:"Vagaro", gmv:58000, complexity:4.2, manager:"Priya Anand", ticketOwner:"Nico Duran", psm:"Amira Aldewick", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,14), prevLaunch:dt(2026,6,14), changeLoggedDate:null, createDate:dt(2026,5,10), scopingDate:dt(2026,5,20), serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-2204", hsId:"44938479006", client:"Ayla Aesthetics", medspaId:"2204", fullAddress:"501 E Boston Post Rd, Mamaroneck, NY 10543", segment:"Enterprise", emr:"BLVD", gmv:184000, complexity:6.5, manager:"Jordan Blake", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,7,4), prevLaunch:dt(2026,6,28), changeLoggedDate:dt(2026,6,6), createDate:dt(2026,5,1), scopingDate:dt(2026,5,15), serviceMenuDate:null, completeDate:null, migrationNotes:"Provider-specific pricing confirmed; service menu build must account for provider-level pricing.", notes:["Discovery call completed — scraper request submitted (Linear PMA-1084)."], mic:"Jordan Blake", psmAttendee:"Amira Aldewick", travelDates:{start:dt(2026,8,2),end:dt(2026,8,5)}},
+  {id:"MX-2189", hsId:"44938472189", client:"VivanaMD Medical Spa and Wellness Clinic", medspaId:"2189", fullAddress:"1812 Airport Rd Unit 4, Nashville, TN 37206", segment:"Enterprise", emr:"Dr. Chrono", gmv:96000, complexity:9.1, manager:null, ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,28), prevLaunch:dt(2026,6,28), changeLoggedDate:null, createDate:dt(2026,5,25), scopingDate:dt(2026,6,3), serviceMenuDate:null, completeDate:null, migrationNotes:"MIGRATION INTAKE SUMMARY — Vivana MD (VMD). Risk level HIGH. Primary EMR DrChrono not yet migrated; additional EMR Booker unknown/unassessed. Estimated patient count 1400.", notes:[], mic:null, psmAttendee:null, travelDates:{start:dt(2026,6,26),end:dt(2026,6,29)}},
+  {id:"MX-2210", hsId:"44938472210", client:"Elissa Sy", medspaId:"2210", fullAddress:"77 Ponce De Leon Blvd, Coral Gables, FL 33134", segment:"Growth", emr:"Aesthetic Record", gmv:26000, complexity:2.6, manager:"Nico Duran", ticketOwner:"Nico Duran", psm:"Leslie Nichols", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,7,10), prevLaunch:dt(2026,7,10), changeLoggedDate:null, createDate:dt(2026,6,1), scopingDate:dt(2026,6,8), serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1980", hsId:"44938471980", client:"Refined Wellness", medspaId:"1980", fullAddress:"200 Boylston St, Chestnut Hill, MA 02467", segment:"No Segment", emr:"Booker", gmv:12000, complexity:1.2, manager:null, ticketOwner:"Nico Duran", psm:"Leslie Nichols", stage:"Migration Scoping", lifecycleStage:"Pre-Launch", onHold:false, launch:null, prevLaunch:null, changeLoggedDate:null, createDate:dt(2026,6,20), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1801", hsId:"44938471801", client:"Avalon Laser Inc", medspaId:"1801", fullAddress:"4400 Bellaire Blvd, Houston, TX 77025", segment:"Silver", emr:"Vagaro", gmv:31000, complexity:3.0, manager:"Benedetto Palang", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:true, launch:dt(2025,9,1), prevLaunch:dt(2025,9,1), changeLoggedDate:null, createDate:dt(2025,7,1), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"On hold — client paused onboarding.", notes:["On hold — client paused onboarding."], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1771", hsId:"44938471771", client:"Eleve Esthetics", medspaId:"1771", fullAddress:"90 Central St, Wellesley, MA 02481", segment:"Growth", emr:"Aesthetic Record", gmv:19000, complexity:2.1, manager:"Mary Ann Constante", ticketOwner:"Mary Ann Constante", psm:"Leslie Nichols", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:true, launch:dt(2025,9,13), prevLaunch:dt(2025,9,13), changeLoggedDate:null, createDate:dt(2025,7,15), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1899", hsId:"44938471899", client:"HIVE Wellness & Aesthetic Boutique", medspaId:"1899", fullAddress:"55 Newbury St, Boston, MA 02116", segment:"Experienced", emr:"BLVD", gmv:44000, complexity:3.3, manager:"Priya Anand", ticketOwner:"Priya Anand", psm:"Leslie Nichols", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:true, launch:dt(2026,2,2), prevLaunch:dt(2026,2,2), changeLoggedDate:null, createDate:dt(2025,12,1), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-2301", hsId:"44938472301", client:"Freedom Wellness and Aesthetics", medspaId:"2301", fullAddress:"33 Arch St, Boston, MA 02110", segment:"Growth", emr:"Aesthetic Record", gmv:28000, complexity:2.4, manager:"Mary Ann Constante", ticketOwner:"Mary Ann Constante", psm:"Leslie Nichols", stage:"File Migration Execution", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,7,27), prevLaunch:dt(2026,7,27), changeLoggedDate:null, createDate:dt(2026,5,20), scopingDate:dt(2026,5,28), serviceMenuDate:dt(2026,6,10), completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-2303", hsId:"44938472303", client:"Barbarino Surgical Arts (Texas)", medspaId:"2303", fullAddress:"5959 West Loop S, Bellaire, TX 77401", segment:"Enterprise", emr:"Nextech", gmv:132000, complexity:6.8, manager:"Benedetto Palang", ticketOwner:"Benedetto Palang", psm:"Leslie Nichols", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,8,4), prevLaunch:dt(2026,8,4), changeLoggedDate:null, createDate:dt(2026,6,15), scopingDate:dt(2026,6,25), serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:"Benedetto Palang", psmAttendee:"Leslie Nichols", travelDates:{start:dt(2026,9,1),end:dt(2026,9,4)}},
+  {id:"MX-2304", hsId:"44938472304", client:"Barbarino Surgical Arts", medspaId:"2304", fullAddress:"5959 West Loop S, Bellaire, TX 77401", segment:"Enterprise", emr:"Nextech", gmv:118000, complexity:6.4, manager:"Benedetto Palang", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Internal Quality Review", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,8,4), prevLaunch:dt(2026,8,4), changeLoggedDate:null, createDate:dt(2026,6,10), scopingDate:dt(2026,6,18), serviceMenuDate:dt(2026,6,29), completeDate:null, migrationNotes:"", notes:[], mic:"Benedetto Palang", psmAttendee:"Amira Aldewick", travelDates:{start:dt(2026,9,1),end:dt(2026,9,4)}},
+  {id:"MX-1855", hsId:"44938471855", client:"Med Aesthetics", medspaId:"1855", fullAddress:"400 Perimeter Center Ter, Atlanta, GA 30346", segment:"Growth", emr:"Vagaro", gmv:24000, complexity:2.0, manager:"Mary Ann Constante", ticketOwner:"Mary Ann Constante", psm:"Leslie Nichols", stage:"Migration Requested", lifecycleStage:"Pre-Launch", onHold:false, launch:dt(2026,8,6), prevLaunch:dt(2026,8,6), changeLoggedDate:null, createDate:dt(2026,7,1), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-2123", hsId:"44938472123", client:"Icon Anti-Aging & Aesthetics Rochester", medspaId:"2123", fullAddress:"850 Linden Ave, Rochester, MI 48307", segment:"Enterprise", emr:"PatientNow", gmv:101000, complexity:6.1, manager:null, ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Requested", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,8,15), prevLaunch:dt(2026,8,15), changeLoggedDate:null, createDate:dt(2026,6,29), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:{start:dt(2026,9,13),end:dt(2026,9,16)}},
+  {id:"MX-2190b", hsId:"44938472191", client:"Kelly Pfeiffer", medspaId:"2191", fullAddress:"11500 W Olympic Blvd, Los Angeles, CA 90064", segment:"Experienced", emr:"Aesthetic Record", gmv:41000, complexity:2.7, manager:"Priya Anand", ticketOwner:"Benedetto Palang", psm:"Leslie Nichols", stage:"Client Migration Execution", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,8,1), prevLaunch:dt(2026,8,1), changeLoggedDate:null, createDate:dt(2026,6,5), scopingDate:dt(2026,6,12), serviceMenuDate:dt(2026,6,24), completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1490", hsId:"44938471490", client:"Vivid Injectables", medspaId:"1490", fullAddress:"2701 Ocean Park Blvd, Santa Monica, CA 90405", segment:"Growth", emr:"Dr. Chrono", gmv:31000, complexity:5.1, manager:"Jordan Blake", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Prep & Testing", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,14), prevLaunch:dt(2026,6,8), changeLoggedDate:dt(2026,6,29), createDate:dt(2026,5,1), scopingDate:dt(2026,5,10), serviceMenuDate:dt(2026,5,22), completeDate:null, migrationNotes:"", notes:["Pushed back 6 days — client requested extra week for staff training."], mic:null, psmAttendee:null, travelDates:{start:dt(2026,6,12),end:dt(2026,6,15)}},
+  {id:"MX-1799", hsId:"44938471799", client:"Radiant Row Med Spa", medspaId:"1799", fullAddress:"920 Peachtree St NE, Atlanta, GA 30309", segment:"Silver", emr:"Booker", gmv:39000, complexity:4.0, manager:"Nico Duran", ticketOwner:"Nico Duran", psm:"Amira Aldewick", stage:"Reworking", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,7,25), prevLaunch:dt(2026,7,18), changeLoggedDate:dt(2026,7,2), createDate:dt(2026,5,20), scopingDate:dt(2026,5,29), serviceMenuDate:dt(2026,6,12), completeDate:null, migrationNotes:"QA found duplicate appointment records — reworking client migration step.", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1602", hsId:"44938471602", client:"Sunset Med Aesthetics", medspaId:"1602", fullAddress:"1234 Ocean Ave, San Diego, CA 92109", segment:"Beginner", emr:"Square", gmv:15000, complexity:1.4, manager:"Nico Duran", ticketOwner:"Nico Duran", psm:"Leslie Nichols", stage:"Closed - Churned/Canceled", lifecycleStage:"Onboarding", onHold:false, launch:null, prevLaunch:null, changeLoggedDate:null, createDate:dt(2026,3,1), scopingDate:dt(2026,3,10), serviceMenuDate:null, completeDate:null, migrationNotes:"Client canceled onboarding before launch.", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1533", hsId:"44938471533", client:"GlowLab Aesthetics", medspaId:"1533", fullAddress:"600 W Fulton St, Chicago, IL 60661", segment:"Silver", emr:"Vagaro", gmv:48000, complexity:2.8, manager:"Priya Anand", ticketOwner:"Priya Anand", psm:"Amira Aldewick", stage:"Closed - Churned/Canceled", lifecycleStage:"Onboarding", onHold:false, launch:null, prevLaunch:null, changeLoggedDate:null, createDate:dt(2026,2,15), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+
+  // ----- COMPLETED (feed 30/60-day counts + phase durations + manager outliers) -----
+  {id:"MX-1401", hsId:"44938471401", client:"Bloom Dermatology", medspaId:"1401", fullAddress:"18 Tremont St, Boston, MA 02108", segment:"Silver", emr:"Aesthetic Record", gmv:61000, complexity:3.4, manager:"Priya Anand", ticketOwner:"Priya Anand", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,5), prevLaunch:dt(2026,6,5), changeLoggedDate:null, createDate:dt(2026,4,1), scopingDate:dt(2026,4,9), serviceMenuDate:dt(2026,4,22), completeDate:dt(2026,6,5), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1402", hsId:"44938471402", client:"Halcyon Aesthetics", medspaId:"1402", fullAddress:"70 Linden St, Wellesley, MA 02481", segment:"Growth", emr:"Vagaro", gmv:19000, complexity:1.5, manager:"Nico Duran", ticketOwner:"Nico Duran", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,5,20), prevLaunch:dt(2026,5,20), changeLoggedDate:null, createDate:dt(2026,3,25), scopingDate:dt(2026,4,2), serviceMenuDate:dt(2026,4,14), completeDate:dt(2026,5,20), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1403", hsId:"44938471403", client:"Lotus Med Spa", medspaId:"1403", fullAddress:"400 5th Ave, New York, NY 10018", segment:"Gold", emr:"BLVD", gmv:78000, complexity:4.6, manager:"Jordan Blake", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,1), prevLaunch:dt(2026,6,1), changeLoggedDate:null, createDate:dt(2026,4,10), scopingDate:dt(2026,4,20), serviceMenuDate:dt(2026,5,4), completeDate:dt(2026,6,1), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1404", hsId:"44938471404", client:"Rivera Skin Studio", medspaId:"1404", fullAddress:"200 SW Market St, Portland, OR 97201", segment:"Silver", emr:"Vagaro", gmv:52000, complexity:3.1, manager:"Mary Ann Constante", ticketOwner:"Mary Ann Constante", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,4,15), prevLaunch:dt(2026,4,15), changeLoggedDate:null, createDate:dt(2026,1,20), scopingDate:dt(2026,1,30), serviceMenuDate:dt(2026,2,20), completeDate:dt(2026,4,15), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1405", hsId:"44938471405", client:"Elevate Skin Studio", medspaId:"1405", fullAddress:"3200 N Lamar Blvd, Austin, TX 78705", segment:"Growth", emr:"BLVD", gmv:22000, complexity:1.9, manager:"Nico Duran", ticketOwner:"Nico Duran", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,3,10), prevLaunch:dt(2026,3,10), changeLoggedDate:null, createDate:dt(2026,0,15), scopingDate:dt(2026,0,25), serviceMenuDate:dt(2026,1,15), completeDate:dt(2026,3,10), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1406", hsId:"44938471406", client:"Willow & Vine Med Spa", medspaId:"1406", fullAddress:"1 Beacon St, Boston, MA 02108", segment:"Enterprise", emr:"Nextech", gmv:142000, complexity:8.2, manager:"Jordan Blake", ticketOwner:"Priya Anand", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,2,20), prevLaunch:dt(2026,2,20), changeLoggedDate:null, createDate:dt(2025,10,15), scopingDate:dt(2025,10,29), serviceMenuDate:dt(2025,11,20), completeDate:dt(2026,2,20), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1407", hsId:"44938471407", client:"Radiance MedSpa Group", medspaId:"1407", fullAddress:"3500 Peachtree Rd NE, Atlanta, GA 30326", segment:"Enterprise", emr:"Dr. Chrono", gmv:265000, complexity:9.6, manager:"Benedetto Palang", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,1,25), prevLaunch:dt(2026,1,25), changeLoggedDate:null, createDate:dt(2025,9,1), scopingDate:dt(2025,9,20), serviceMenuDate:dt(2025,10,25), completeDate:dt(2026,1,25), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+  {id:"MX-1408", hsId:"44938471408", client:"Vivid Aesthetic Bar", medspaId:"1408", fullAddress:"2100 Bryan St, Dallas, TX 75201", segment:"Gold", emr:"BLVD", gmv:66000, complexity:3.9, manager:"Priya Anand", ticketOwner:"Priya Anand", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,28), prevLaunch:dt(2026,6,28), changeLoggedDate:null, createDate:dt(2026,5,5), scopingDate:dt(2026,5,13), serviceMenuDate:dt(2026,5,26), completeDate:dt(2026,6,28), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
+];
+
+const TASK_TEMPLATE = [
+  {name:"Kick-off call"},
+  {name:"Migration requested / scoping"},
+  {name:"Discovery call"},
+  {name:"Scraper request submitted"},
+  {name:"Service menu mapping"},
+  {name:"Data migration & QA"},
+  {name:"Launch"},
+];
+
+// Illustrative aggregate trend data (independent of the individual TICKETS sample above,
+// so the trend charts have a clean multi-month shape to review) — swap for real
+// Firestore-aggregated queries once HubSpot sync is live.
+const MONTHLY_TRENDS = [
+  {month:"Feb", volume:{Enterprise:2,Gold:1,Silver:3,Experienced:1,Growth:2,Beginner:1}, gmv:{Enterprise:180000,Gold:60000,Silver:90000,Experienced:35000,Growth:40000,Beginner:12000}, avgDays:58},
+  {month:"Mar", volume:{Enterprise:1,Gold:2,Silver:2,Experienced:2,Growth:3,Beginner:1}, gmv:{Enterprise:120000,Gold:95000,Silver:70000,Experienced:55000,Growth:55000,Beginner:10000}, avgDays:55},
+  {month:"Apr", volume:{Enterprise:2,Gold:2,Silver:3,Experienced:1,Growth:2,Beginner:2}, gmv:{Enterprise:210000,Gold:100000,Silver:100000,Experienced:30000,Growth:38000,Beginner:18000}, avgDays:52},
+  {month:"May", volume:{Enterprise:3,Gold:1,Silver:2,Experienced:2,Growth:4,Beginner:1}, gmv:{Enterprise:300000,Gold:55000,Silver:80000,Experienced:60000,Growth:70000,Beginner:9000}, avgDays:49},
+  {month:"Jun", volume:{Enterprise:2,Gold:3,Silver:3,Experienced:2,Growth:3,Beginner:2}, gmv:{Enterprise:230000,Gold:145000,Silver:110000,Experienced:58000,Growth:52000,Beginner:16000}, avgDays:45},
+  {month:"Jul", volume:{Enterprise:3,Gold:2,Silver:2,Experienced:1,Growth:2,Beginner:1}, gmv:{Enterprise:340000,Gold:80000,Silver:75000,Experienced:28000,Growth:35000,Beginner:11000}, avgDays:43},
+];
+const DAYS_TREND_12MO = [
+  {month:"Aug '25", avgDays:66}, {month:"Sep '25", avgDays:63}, {month:"Oct '25", avgDays:61},
+  {month:"Nov '25", avgDays:60}, {month:"Dec '25", avgDays:57}, {month:"Jan '26", avgDays:58},
+  {month:"Feb '26", avgDays:58}, {month:"Mar '26", avgDays:55}, {month:"Apr '26", avgDays:52},
+  {month:"May '26", avgDays:49}, {month:"Jun '26", avgDays:45}, {month:"Jul '26", avgDays:43},
+];
+
+// ================= CAPACITY MODEL =================
+function segmentBase(seg){
+  return seg==="Enterprise" ? 10 : seg==="Gold" ? 8 : seg==="Silver" ? 7 : seg==="Experienced" ? 6 : seg==="Growth" ? 5 : seg==="Beginner" ? 4 : 3;
+}
+function emrWeight(emr){
+  // Rough weight: not-yet-migrated EMRs (per Notion) carry more manual work.
+  return emrMigrated(emr) ? 4 : 8;
+}
+function proximityMultiplier(launchDate, weekOffset){
+  if (!launchDate) return 0.6;
+  const days = Math.round((launchDate-today)/86400000) - weekOffset*7;
+  if (days <= 7) return 1.8;
+  if (days <= 14) return 1.4;
+  if (days <= 30) return 1.1;
+  return 0.85;
+}
+function ticketHoursForWeek(t, weekOffset){
+  if (!t.launch) return 0;
+  const base = segmentBase(t.segment);
+  const emrW = emrWeight(t.emr) * 1.3;
+  const gmvBump = t.gmv >= 100000 ? 4 : 0;
+  const travelBump = t.travelDates ? 3 : 0;
+  const prox = proximityMultiplier(t.launch, weekOffset);
+  return Math.round((base + emrW + gmvBump + travelBump) * prox * 10) / 10;
+}
+function weekBucket(d){
+  if (!d) return null;
+  return Math.floor((d-today)/86400000/7);
+}
+// Monday-start calendar week bucket + human label, used for the main-dashboard weekly chart.
+function mondayOf(d){ const nd = new Date(d); const day=(nd.getDay()+6)%7; nd.setDate(nd.getDate()-day); return nd; }
+function weekLabel(mon){
+  const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+  const sameMonth = mon.getMonth()===sun.getMonth();
+  const mo1 = mon.toLocaleDateString("en-US",{month:"short"});
+  const mo2 = sun.toLocaleDateString("en-US",{month:"short"});
+  return sameMonth ? `${mo1} ${mon.getDate()}–${sun.getDate()}` : `${mo1} ${mon.getDate()}–${mo2} ${sun.getDate()}`;
+}
+function calWeekBucket(d){
+  const thisMon = mondayOf(today);
+  const dMon = mondayOf(d);
+  return Math.round((dMon-thisMon)/86400000/7);
+}
+
+// ================= STATE =================
+let calYear = today.getFullYear(), calMonth = today.getMonth();
+let filters = { stage:"all", owner:"all", segment:"all", lifecycle:"all" };
+let stageDrilldownStage = null;
+
+function filteredTickets(){
+  return TICKETS.filter(t=>
+    (filters.stage==="all" || t.stage===filters.stage) &&
+    (filters.owner==="all" || t.ticketOwner===filters.owner) &&
+    (filters.segment==="all" || t.segment===filters.segment) &&
+    (filters.lifecycle==="all" || t.lifecycleStage===filters.lifecycle)
+  );
+}
+
+// ================= MAIN DASHBOARD =================
+function renderKpis(){
+  const assigned = TICKETS.filter(t=>t.manager).length;
+  const launchingSoon = TICKETS.filter(t=> t.launch && (t.launch-today)/86400000 <= 14 && (t.launch-today)/86400000 >= 0).length;
+  const pushed = TICKETS.filter(t=> t.launch && t.prevLaunch && +t.launch > +t.prevLaunch).length;
+  const movedUp = TICKETS.filter(t=> t.launch && t.prevLaunch && +t.launch < +t.prevLaunch).length;
+  const totalGmv = TICKETS.filter(t=>t.stage!=="Migration Complete" && t.stage!=="Closed - Churned/Canceled").reduce((s,t)=>s+t.gmv,0);
+  const byEnterprise = TICKETS.filter(t=>t.segment==="Enterprise" && t.stage!=="Migration Complete").length;
+  const unassignedEnt = TICKETS.filter(t=>!t.manager && t.segment==="Enterprise" && t.stage!=="Migration Complete").length;
+
+  const kpis = [
+    {label:"Total Assigned", value:assigned, delta:`${TICKETS.length-assigned} unassigned`, cls:"flat"},
+    {label:"Launching Next 14d", value:launchingSoon, delta:"across all segments", cls:"flat"},
+    {label:"Date Changed (30d)", value:pushed+movedUp, delta:`${pushed} pushed back, ${movedUp} moved up`, cls:"up"},
+    {label:"Total GMV to Launch", value:"$"+(totalGmv/1000).toFixed(0)+"K", delta:"open pipeline", cls:"flat"},
+    {label:"Enterprise Launches", value:byEnterprise, delta:"priority tier", cls:"flat"},
+    {label:"Unassigned Enterprise", value:unassignedEnt, delta:"needs manager", cls:"up"},
+  ];
+  document.getElementById("kpiGrid").innerHTML = kpis.map(k=>`
+    <div class="card kpi">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}</div>
+      <div class="delta ${k.cls}">${k.delta}</div>
+    </div>`).join("");
+}
+function renderWeeklyChart(){
+  const buckets = [0,1,2,3,4,5];
+  const labels = buckets.map(b=>{ const mon=mondayOf(today); mon.setDate(mon.getDate()+b*7); return weekLabel(mon) + (b===5? "+":""); });
+  const counts = new Array(6).fill(0);
+  const compSums = new Array(6).fill(0);
+  TICKETS.forEach(t=>{
+    if (!t.launch || t.stage==="Migration Complete" || t.stage==="Closed - Churned/Canceled") return;
+    const wb = calWeekBucket(t.launch);
+    if (wb < 0) return;
+    const b = Math.min(wb,5);
+    counts[b]++; compSums[b]+=t.complexity;
+  });
+  const avgComp = counts.map((c,i)=> c? (compSums[i]/c).toFixed(1): 0);
+  new Chart(document.getElementById("weeklyChart"), {
+    type:"bar",
+    data:{ labels, datasets:[
+      {label:"Launches", data:counts, backgroundColor:"#4f7cff", yAxisID:"y", borderRadius:5},
+      {label:"Avg complexity", data:avgComp, type:"line", borderColor:"#d97706", backgroundColor:"#d97706", yAxisID:"y1", tension:.3}
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      scales:{ y:{beginAtZero:true, title:{display:true,text:"Launches"}}, y1:{beginAtZero:true, position:"right", grid:{drawOnChartArea:false}, title:{display:true,text:"Avg complexity"}}},
+      plugins:{legend:{position:"bottom"}} }
+  });
+}
+function renderSegmentChart(){
+  const active = TICKETS.filter(t=>t.stage!=="Migration Complete" && t.stage!=="Closed - Churned/Canceled");
+  const counts = SEGMENTS.map(s=>active.filter(t=>t.segment===s).length);
+  new Chart(document.getElementById("segmentChart"), {
+    type:"doughnut",
+    data:{ labels:SEGMENTS, datasets:[{data:counts, backgroundColor:SEGMENTS.map(s=>SEG_COLOR[s].dot)}]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom", labels:{boxWidth:10, font:{size:10.5}}}} }
+  });
+}
+function changeBadge(t){
+  if (!t.launch || !t.prevLaunch) return `<span class="badge badge-flat">No change</span>`;
+  if (+t.launch > +t.prevLaunch) { const days=Math.round((t.launch-t.prevLaunch)/86400000); return `<span class="badge badge-pushed">Pushed back ${days}d</span>`; }
+  if (+t.launch < +t.prevLaunch) { const days=Math.round((t.prevLaunch-t.launch)/86400000); return `<span class="badge badge-moved">Moved up ${days}d</span>`; }
+  return `<span class="badge badge-flat">No change</span>`;
+}
+function renderChangeTable(){
+  const changed = TICKETS.filter(t=>t.launch && t.prevLaunch && +t.launch !== +t.prevLaunch);
+  document.getElementById("changeTableBody").innerHTML = changed.length ? changed.map(t=>`
+    <tr><td>${t.client}</td><td>${t.manager||"—"}</td><td>${changeBadge(t)}</td><td>${fmt(t.prevLaunch)}</td><td>${fmt(t.launch)}</td></tr>
+  `).join("") : `<tr><td colspan="5" style="color:var(--sub)">No launch date changes in the last 30 days.</td></tr>`;
+}
+function renderGmvTable(){
+  const byMgr = {};
+  TICKETS.filter(t=>t.stage!=="Migration Complete" && t.stage!=="Closed - Churned/Canceled").forEach(t=>{ const k=t.manager||"Unassigned"; byMgr[k]=byMgr[k]||{count:0,gmv:0}; byMgr[k].count++; byMgr[k].gmv+=t.gmv; });
+  document.getElementById("gmvTableBody").innerHTML = Object.entries(byMgr).map(([mgr,v])=>`
+    <tr><td>${mgr}</td><td>${v.count}</td><td>$${(v.gmv/1000).toFixed(0)}K</td></tr>
+  `).join("");
+}
+function renderLaunchingThisMonth(){
+  const list = TICKETS.filter(t=> t.launch && t.launch.getMonth()===today.getMonth() && t.launch.getFullYear()===today.getFullYear())
+    .sort((a,b)=>a.launch-b.launch);
+  document.getElementById("launchingMonthBody").innerHTML = list.length ? list.map(t=>`
+    <tr class="clickable" onclick="toggleExpandRow('${t.id}')">
+      <td style="width:16px;">▸</td>
+      <td>${t.client}</td>
+      <td>${segBadge(t.segment)}</td>
+      <td>${avatarHtml(t.manager)} ${t.manager||"Unassigned"}</td>
+      <td>${t.stage}</td>
+      <td>${t.complexity}</td>
+      <td>${fmt(t.launch)}</td>
+    </tr>
+    <tr id="expand-${t.id}" style="display:none;" class="expand-row"><td colspan="7">${expandContent(t)}</td></tr>
+  `).join("") : `<tr><td colspan="7" style="color:var(--sub)">No launches scheduled this month.</td></tr>`;
+}
+function expandContent(t){
+  return `<div class="exp-grid">
+    <div><div class="k">Medspa ID</div><div class="v">${t.medspaId}</div></div>
+    <div><div class="k">Location</div><div class="v">${t.fullAddress}</div></div>
+    <div><div class="k">Current EMR</div><div class="v">${t.emr} (${emrConfidenceLabel(t.emr)})</div></div>
+    <div><div class="k">Ticket owner</div><div class="v">${t.ticketOwner}</div></div>
+    <div><div class="k">Practice Success Manager</div><div class="v">${t.psm}</div></div>
+    <div><div class="k">Create date</div><div class="v">${fmt(t.createDate)}</div></div>
+    <div><div class="k">Scoping date</div><div class="v">${fmt(t.scopingDate)}</div></div>
+    <div><div class="k">Service menu mapping date</div><div class="v">${fmt(t.serviceMenuDate)}</div></div>
+  </div>
+  <div style="font-size:12.5px;margin-bottom:8px;"><b>Migration Notes:</b> ${t.migrationNotes || "—"}</div>
+  <a class="hs-link" href="${hsUrl(t.hsId)}" target="_blank" rel="noopener">Open ${t.id} in HubSpot →</a>`;
+}
+window.toggleExpandRow = function(id){
+  const row = document.getElementById("expand-"+id);
+  if (row) row.style.display = row.style.display==="none" ? "table-row" : "none";
+};
+
+function renderStageChart(){
+  const counts = STAGES.map(s=>TICKETS.filter(t=>t.stage===s).length);
+  const chart = new Chart(document.getElementById("stageChart"), {
+    type:"bar",
+    data:{ labels:STAGES, datasets:[{label:"Tickets", data:counts, backgroundColor:"#4f7cff", borderRadius:4}]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      scales:{ x:{ ticks:{ font:{size:9.5}, maxRotation:60, minRotation:60 } }, y:{beginAtZero:true} },
+      plugins:{legend:{display:false}},
+      onClick:(evt, els)=>{ if(els.length){ const stage = STAGES[els[0].index]; showStageDrilldown(stage); } }
+    }
+  });
+}
+function renderStageSummary(){
+  const rows = STAGES.map(stage=>{
+    const items = TICKETS.filter(t=>t.stage===stage);
+    const gmv = items.reduce((s,t)=>s+t.gmv,0);
+    const mix = {};
+    items.forEach(t=>{ mix[t.segment]=(mix[t.segment]||0)+1; });
+    const mixHtml = Object.entries(mix).map(([seg,c])=>`<span class="chip">${seg} ${c}</span>`).join("") || "<span class='chip'>—</span>";
+    return `<tr class="clickable" onclick="showStageDrilldown('${stage}')"><td>${stage}</td><td>${items.length}</td><td>$${(gmv/1000).toFixed(0)}K</td><td>${mixHtml}</td></tr>`;
+  }).join("");
+  document.getElementById("stageSummaryBody").innerHTML = rows;
+}
+window.showStageDrilldown = function(stage){
+  stageDrilldownStage = stage;
+  const items = TICKETS.filter(t=>t.stage===stage);
+  document.getElementById("stageDrilldownWrap").style.display = "block";
+  document.getElementById("stageDrilldownTitle").textContent = `${stage} — ${items.length} ticket(s)`;
+  document.getElementById("stageDrilldownBody").innerHTML = items.map(t=>`
+    <tr class="clickable" onclick="openTicket('${t.id}')"><td>${t.client}</td><td>${segBadge(t.segment)}</td><td>${t.manager||"Unassigned"}</td><td>$${(t.gmv/1000).toFixed(0)}K</td><td>${t.complexity}</td></tr>
+  `).join("");
+};
+
+function renderCompletedLog(){
+  const completed = TICKETS.filter(t=>t.completeDate);
+  const c30 = completed.filter(t=> (today-t.completeDate)/86400000 <= 30);
+  const c60 = completed.filter(t=> (today-t.completeDate)/86400000 <= 60);
+  document.getElementById("completed30").textContent = c30.length;
+  document.getElementById("completed30gmv").textContent = "$"+(c30.reduce((s,t)=>s+t.gmv,0)/1000).toFixed(0)+"K GMV";
+  document.getElementById("completed60").textContent = c60.length;
+  document.getElementById("completed60gmv").textContent = "$"+(c60.reduce((s,t)=>s+t.gmv,0)/1000).toFixed(0)+"K GMV";
+  const withDays = completed.map(t=>daysBetween(t.createDate,t.completeDate)).filter(d=>d!=null);
+  const avgAll = withDays.length ? Math.round(withDays.reduce((a,b)=>a+b,0)/withDays.length) : 0;
+  document.getElementById("avgDaysAll").textContent = avgAll + "d";
+
+  // Outlier managers
+  const byMgr = {};
+  completed.forEach(t=>{ const d=daysBetween(t.createDate,t.completeDate); if(d==null) return; const k=t.manager||"Unassigned"; byMgr[k]=byMgr[k]||[]; byMgr[k].push(d); });
+  const overallAvg = avgAll;
+  document.getElementById("outlierAvgLabel").textContent = `Team average: ${overallAvg} days`;
+  const rows = Object.entries(byMgr).map(([mgr,days])=>{
+    const avg = Math.round(days.reduce((a,b)=>a+b,0)/days.length);
+    return {mgr, avg, n:days.length, isOutlier: avg > overallAvg};
+  }).filter(r=>r.isOutlier).sort((a,b)=>b.avg-a.avg);
+  document.getElementById("outlierBody").innerHTML = rows.length ? rows.map(r=>`
+    <tr><td>${r.mgr}</td><td>${r.avg}d</td><td><span class="badge badge-outlier">+${r.avg-overallAvg}d</span></td><td>${r.n}</td></tr>
+  `).join("") : `<tr><td colspan="4" style="color:var(--sub)">No managers currently above the team average.</td></tr>`;
+}
+
+function renderTrendCharts(){
+  const months = MONTHLY_TRENDS.map(m=>m.month);
+  const segColors = SEGMENTS.slice(0,6).map(s=>SEG_COLOR[s].dot);
+  new Chart(document.getElementById("volumeTrendChart"), {
+    type:"bar",
+    data:{ labels:months, datasets: SEGMENTS.slice(0,6).map((seg,i)=>({
+      label:seg, data: MONTHLY_TRENDS.map(m=>m.volume[seg]||0), backgroundColor: segColors[i], stack:"v"
+    }))},
+    options:{ responsive:true, maintainAspectRatio:false, scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}, plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}} }
+  });
+  new Chart(document.getElementById("gmvTrendChart"), {
+    type:"bar",
+    data:{ labels:months, datasets: SEGMENTS.slice(0,6).map((seg,i)=>({
+      label:seg, data: MONTHLY_TRENDS.map(m=>Math.round((m.gmv[seg]||0)/1000)), backgroundColor: segColors[i], stack:"g"
+    }))},
+    options:{ responsive:true, maintainAspectRatio:false, scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true, title:{display:true,text:"$K"}}}, plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}} }
+  });
+  new Chart(document.getElementById("daysTrendChart"), {
+    type:"line",
+    data:{ labels: DAYS_TREND_12MO.map(m=>m.month), datasets:[{label:"Avg days to complete", data: DAYS_TREND_12MO.map(m=>m.avgDays), borderColor:"#4f7cff", backgroundColor:"#4f7cff", tension:.3}]},
+    options:{ responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true}}, plugins:{legend:{display:false}} }
+  });
+}
+function renderPhaseChart(){
+  const withAll = TICKETS.filter(t=>t.createDate && t.scopingDate);
+  const p1 = withAll.map(t=>daysBetween(t.createDate,t.scopingDate)).filter(d=>d!=null);
+  const withSm = TICKETS.filter(t=>t.scopingDate && t.serviceMenuDate);
+  const p2 = withSm.map(t=>daysBetween(t.scopingDate,t.serviceMenuDate)).filter(d=>d!=null);
+  const withComplete = TICKETS.filter(t=>t.serviceMenuDate && t.completeDate);
+  const p3 = withComplete.map(t=>daysBetween(t.serviceMenuDate,t.completeDate)).filter(d=>d!=null);
+  const avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
+  new Chart(document.getElementById("phaseChart"), {
+    type:"bar",
+    data:{ labels:["Create → Scoping","Scoping → Service Menu Mapping","Service Menu Mapping → Complete"],
+      datasets:[{ data:[avg(p1),avg(p2),avg(p3)], backgroundColor:["#4f7cff","#d97706","#16a34a"], borderRadius:5 }] },
+    options:{ indexAxis:"y", responsive:true, maintainAspectRatio:false, scales:{x:{beginAtZero:true,title:{display:true,text:"Days"}}}, plugins:{legend:{display:false}} }
+  });
+}
+
+// ================= LAUNCH CALENDAR (month grid) =================
+function populateFilterOptions(){
+  document.getElementById("filterStage").innerHTML = `<option value="all">Stage: All</option>` + STAGES.map(s=>`<option value="${s}">${s}</option>`).join("");
+  const owners = [...new Set(TICKETS.map(t=>t.ticketOwner).filter(Boolean))];
+  document.getElementById("filterOwner").innerHTML = `<option value="all">Ticket Owner: All</option>` + owners.map(o=>`<option value="${o}">${o}</option>`).join("");
+  document.getElementById("filterSegment").innerHTML = `<option value="all">Segment: All</option>` + SEGMENTS.map(s=>`<option value="${s}">${s}</option>`).join("");
+  document.getElementById("filterStage").addEventListener("change",e=>{filters.stage=e.target.value; renderCalendar();});
+  document.getElementById("filterOwner").addEventListener("change",e=>{filters.owner=e.target.value; renderCalendar();});
+  document.getElementById("filterSegment").addEventListener("change",e=>{filters.segment=e.target.value; renderCalendar();});
+  document.getElementById("filterLifecycle").addEventListener("change",e=>{filters.lifecycle=e.target.value; renderCalendar();});
+}
+function renderLegend(){
+  const items = SEGMENTS.map(s=>`<span class="item">${segDot(s)}${s}</span>`).join("");
+  document.getElementById("calLegend").innerHTML = items +
+    `<span class="item"><span class="sw" style="background:#f97316"></span>On Hold</span>` +
+    `<span class="item"><span class="badge badge-scrape" style="padding:1px 6px;">S</span> Has scraper (Notion)</span>`;
+}
+function cardStyleFor(t){
+  const c = SEG_COLOR[t.segment] || SEG_COLOR["No Segment"];
+  return `background:${c.bg};color:${c.text};${t.onHold? "border:1.5px solid #f97316;" : ""}`;
+}
+function renderCalendarHead(){
+  const days = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
+  document.getElementById("calHeadRow").innerHTML = days.map(d=>`<div>${d}</div>`).join("") + `<div>WEEK</div>`;
+}
+function renderCalendar(){
+  document.getElementById("calMonthLabel").textContent = new Date(calYear,calMonth,1).toLocaleDateString("en-US",{month:"long",year:"numeric"});
+  const list = filteredTickets();
+  const byDay = {};
+  list.forEach(t=>{ if (t.launch){ const k = ymd(t.launch); byDay[k]=byDay[k]||[]; byDay[k].push(t); } });
+
+  const first = new Date(calYear, calMonth, 1);
+  const startOffset = (first.getDay()+6)%7;
+  const gridStart = new Date(calYear, calMonth, 1-startOffset);
+  const weeksNeeded = Math.ceil((startOffset + new Date(calYear,calMonth+1,0).getDate())/7);
+
+  let body = "";
+  for (let w=0; w<weeksNeeded; w++){
+    let weekTickets = [];
+    let row = "";
+    for (let i=0;i<7;i++){
+      const cellDate = new Date(gridStart); cellDate.setDate(gridStart.getDate()+w*7+i);
+      const inMonth = cellDate.getMonth()===calMonth;
+      const key = ymd(cellDate);
+      const dayTickets = (byDay[key]||[]).slice().sort((a,b)=> SEGMENTS.indexOf(a.segment)-SEGMENTS.indexOf(b.segment));
+      weekTickets = weekTickets.concat(dayTickets);
+      const isToday = +cellDate === +new Date(today.getFullYear(),today.getMonth(),today.getDate());
+      const shown = dayTickets.slice(0,3);
+      const more = dayTickets.length - shown.length;
+      row += `<div class="cal-day ${inMonth?"":"other-month"} ${isToday?"today":""}">
+        <div class="daynum">${cellDate.getDate()}</div>
+        ${shown.map(t=>`<div class="cal-card" style="${cardStyleFor(t)}" onclick="openTicket('${t.id}')" title="${t.client}">
+          <div class="row1">${avatarHtml(t.manager)}<span class="cname">${t.client}</span>${emrScraper(t.emr)?'<span class="badge badge-scrape" style="padding:0 3px;">S</span>':''}</div>
+          <div class="row2">CS ${t.complexity} · ${t.emr}</div>
+        </div>`).join("")}
+        ${more>0? `<div class="cal-more">+${more} more</div>`:""}
+      </div>`;
+    }
+    const avgComp = weekTickets.length ? (weekTickets.reduce((s,t)=>s+t.complexity,0)/weekTickets.length).toFixed(1) : "—";
+    const byOwner = {};
+    weekTickets.forEach(t=>{ const k=t.ticketOwner||"Unassigned"; byOwner[k]=(byOwner[k]||0)+1; });
+    const ownerRows = Object.entries(byOwner).map(([o,c])=>`<div class="owner-row"><span>${o}</span><span>${c}</span></div>`).join("");
+    row += `<div class="cal-weeksum"><b>${weekTickets.length} launch${weekTickets.length===1?"":"es"} · avg CS ${avgComp}</b>${ownerRows}</div>`;
+    body += `<div class="cal-week">${row}</div>`;
+  }
+  document.getElementById("calBody").innerHTML = body;
+
+  const noLaunch = list.filter(t=>!t.launch);
+  const onHold = list.filter(t=>t.onHold);
+  const recentChanges = TICKETS.filter(t=> t.changeLoggedDate && (today-t.changeLoggedDate)/86400000 <= 14);
+
+  document.getElementById("noLaunchCount").textContent = noLaunch.length;
+  document.getElementById("onHoldCount").textContent = onHold.length;
+  document.getElementById("recentUpdatesCount").textContent = recentChanges.length;
+
+  const sideItem = t => `<div class="side-item" onclick="openTicket('${t.id}')">
+    ${avatarHtml(t.manager||t.ticketOwner)}
+    <div><div class="si-name">${t.client}</div><div class="si-sub">${t.stage}${t.launch? " · "+fmt(t.launch):""}</div></div>
+  </div>`;
+  document.getElementById("noLaunchList").innerHTML = noLaunch.length? noLaunch.map(sideItem).join("") : `<div class="si-sub">None</div>`;
+  document.getElementById("onHoldList").innerHTML = onHold.length? onHold.map(sideItem).join("") : `<div class="si-sub">None</div>`;
+  document.getElementById("recentUpdatesList").innerHTML = recentChanges.length? recentChanges.map(t=>`
+    <div class="side-item" onclick="openTicket('${t.id}')">
+      ${avatarHtml(t.manager||t.ticketOwner)}
+      <div><div class="si-name">${t.client}</div><div class="si-sub">${changeBadge(t)} · logged ${fmt(t.changeLoggedDate)}</div></div>
+    </div>`).join("") : `<div class="si-sub">No changes in the last 14 days</div>`;
+}
+document.getElementById("calPrev").addEventListener("click", ()=>{ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); });
+document.getElementById("calNext").addEventListener("click", ()=>{ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); });
+document.getElementById("calToday").addEventListener("click", ()=>{ calYear=today.getFullYear(); calMonth=today.getMonth(); renderCalendar(); });
+
+// ================= TRAVEL =================
+function renderTravel(){
+  const trips = TICKETS.filter(t=> (t.gmv>=100000 || !emrMigrated(t.emr)) && t.launch).sort((a,b)=>a.launch-b.launch);
+  const byMonth = {};
+  trips.forEach(t=>{ const k = t.launch.toLocaleDateString("en-US",{month:"long",year:"numeric"}); byMonth[k]=byMonth[k]||[]; byMonth[k].push(t); });
+  let html = `<div class="travel-row header"><div></div><div>Client</div><div>Location</div><div>Launch date</div><div>Requirement</div><div>Travel dates</div><div>MIC / PSM</div><div>Notes</div></div>`;
+  Object.entries(byMonth).forEach(([month, items])=>{
+    html += `<div class="travel-month"><h3>${month}</h3>`;
+    items.forEach(t=>{
+      const reasonTxt = t.gmv>=100000 ? "$100K+ GMV" : "EMR not yet migrated (" + emrConfidenceLabel(t.emr) + ")";
+      const required = t.gmv>=100000 || !emrMigrated(t.emr);
+      const travelDatesTxt = t.travelDates ? `${fmt(t.travelDates.start)} – ${fmt(t.travelDates.end)}` : "Not set";
+      html += `<div class="travel-row">
+        ${avatarHtml(t.manager||t.ticketOwner)}
+        <div><b>${t.client}</b><div class="si-sub" style="color:var(--sub);font-size:10.5px;">${reasonTxt}</div></div>
+        <div style="font-size:11px;">${t.fullAddress}</div>
+        <div>${fmt(t.launch)}</div>
+        <div>${required? '<span class="badge badge-travel-req">Required</span>' : '<span class="badge badge-travel-des">Desired</span>'}</div>
+        <div style="font-size:11px;">${travelDatesTxt}</div>
+        <div style="font-size:11px;">${t.mic||"—"} / ${t.psmAttendee||"—"}</div>
+        <div><input type="text" placeholder="Add a note" value="" onchange="TICKETS.find(x=>x.id==='${t.id}')._travelNote=this.value"></div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  document.getElementById("travelBody").innerHTML = html || `<div class="card">No travel-flagged migrations currently scheduled.</div>`;
+}
+
+// ================= CAPACITY (Float-style timeline) =================
+function renderCapacity(){
+  const weekLabels = [0,1,2,3,4,5].map(b=>{ const mon=mondayOf(today); mon.setDate(mon.getDate()+b*7); return weekLabel(mon); });
+  document.getElementById("capTlHead").innerHTML = `<div>Manager</div>` + weekLabels.map(w=>`<div>${w}</div>`).join("");
+  document.getElementById("capLegendTop").innerHTML = SEGMENTS.map(s=>`<span class="item">${segDot(s)}${s}</span>`).join("");
+
+  const active = TICKETS.filter(t=>t.stage!=="Migration Complete" && t.stage!=="Closed - Churned/Canceled");
+  const rows = MANAGERS.map(m=>{
+    const mine = active.filter(t=>t.manager===m.name && t.launch);
+    let cells = "";
+    for (let w=0; w<6; w++){
+      const inWeek = mine.filter(t=> Math.min(Math.max(weekBucket(t.launch),0),5) === w);
+      const total = inWeek.reduce((s,t)=>s+ticketHoursForWeek(t,w),0);
+      const totCls = total>44 ? "tot-over" : total>34 ? "tot-warn" : "tot-ok";
+      const bars = inWeek.map(t=>{
+        const hrs = ticketHoursForWeek(t,w);
+        const heightPct = Math.min(100, Math.round(hrs/20*100));
+        const c = SEG_COLOR[t.segment]||SEG_COLOR["No Segment"];
+        return `<div class="cap-bar" style="background:${c.dot};height:${Math.max(16,heightPct)}%;" onclick="openTicket('${t.id}')" title="${t.client} — ${hrs}h">${t.client.split(" ")[0]} ${hrs}h</div>`;
+      }).join("");
+      cells += `<div class="cap-tl-cell">${total>0?`<div class="wk-total ${totCls}">${total.toFixed(0)}h</div>`:""}${bars}</div>`;
+    }
+    return `<div class="cap-tl-row">
+      <div class="cap-tl-mgr">${avatarHtml(m.name)}<div><div class="m-name">${m.name}</div><div class="m-sub">${mine.length} active · not-yet-migrated EMR ${mine.filter(t=>!emrMigrated(t.emr)).length}</div></div></div>
+      ${cells}
+    </div>`;
+  }).join("");
+  document.getElementById("capTlBody").innerHTML = rows;
+
+  const unassigned = active.filter(t=>!t.manager);
+  document.getElementById("unassignedTableBody").innerHTML = unassigned.length ? unassigned.map(t=>`
+    <tr><td>${t.client}</td><td>${segBadge(t.segment)}</td><td>${t.emr}</td><td>${t.complexity}</td><td>${fmt(t.launch)}</td></tr>
+  `).join("") : `<tr><td colspan="5" style="color:var(--sub)">None — all Enterprise onboarding accounts have a manager assigned.</td></tr>`;
+}
+
+// ================= PIPELINE =================
+function renderBoard(){
+  document.getElementById("board").innerHTML = STAGES.filter(s=>s!=="Closed - Churned/Canceled").map(stage=>{
+    const items = TICKETS.filter(t=>t.stage===stage);
+    return `<div class="col">
+      <div class="col-head"><span>${stage}</span><span>${items.length}</span></div>
+      ${items.map(t=>`<div class="ticket-card" onclick="openTicket('${t.id}')">
+        <div class="t-name">${t.client}</div>
+        <div class="t-meta">${segBadge(t.segment)} ${t.emr}</div>
+        <div class="t-meta">${fmt(t.launch)} · ${t.manager||"Unassigned"}</div>
+      </div>`).join("")}
+    </div>`;
+  }).join("");
+}
+
+window.openTicket = function(id){
+  const t = TICKETS.find(x=>x.id===id);
+  const stageIdx = STAGES.indexOf(t.stage);
+  const tasks = TASK_TEMPLATE.map((tk,i)=>({...tk, status: i<stageIdx?"done": i===stageIdx?"progress":"todo"}));
+  document.getElementById("ticketModal").innerHTML = `
+    <div class="modal-head">
+      <div><h2>${t.client}</h2><div class="m-sub" style="font-size:11.5px;color:var(--sub);">${t.id} · Medspa #${t.medspaId} · ${t.stage}${t.onHold?' · <span class="badge badge-hold">On Hold</span>':''}</div></div>
+      <button class="close-x" onclick="closeTicket()">✕</button>
+    </div>
+    <div class="kv-grid">
+      <div><div class="k">Segment</div><div class="v">${segBadge(t.segment)}</div></div>
+      <div><div class="k">Current EMR</div><div class="v">${t.emr} — ${emrConfidenceLabel(t.emr)}${emrScraper(t.emr)?' <span class="badge badge-scrape">Has scraper</span>':''}</div></div>
+      <div><div class="k">Complexity score</div><div class="v">${t.complexity}</div></div>
+      <div><div class="k">Target launch date</div><div class="v">${fmt(t.launch)} ${changeBadge(t)}</div></div>
+      <div><div class="k">Migrations manager</div><div class="v">${t.manager||"Unassigned"}</div></div>
+      <div><div class="k">Ticket owner</div><div class="v">${t.ticketOwner}</div></div>
+      <div><div class="k">Practice Success Manager</div><div class="v">${t.psm}</div></div>
+      <div><div class="k">Location</div><div class="v">${t.fullAddress}</div></div>
+      <div><div class="k">GMV</div><div class="v">$${(t.gmv/1000).toFixed(0)}K</div></div>
+      <div><div class="k">Modeled workload</div><div class="v">${t.launch? ticketHoursForWeek(t, Math.max(0,weekBucket(t.launch))) : "—"} hrs</div></div>
+      <div><div class="k">Create date</div><div class="v">${fmt(t.createDate)}</div></div>
+      <div><div class="k">Scoping date</div><div class="v">${fmt(t.scopingDate)}</div></div>
+      <div><div class="k">Service menu mapping date</div><div class="v">${fmt(t.serviceMenuDate)}</div></div>
+      <div><div class="k">Complete date</div><div class="v">${fmt(t.completeDate)}</div></div>
+    </div>
+    <div class="section-title" style="margin-top:6px;">Migration Notes (HubSpot)</div>
+    <div class="note-box">${t.migrationNotes || "—"}</div>
+    <div class="section-title" style="margin-top:14px;">Tasks</div>
+    ${tasks.map(tk=>`<div class="task-row">
+      <input type="checkbox" ${tk.status==="done"?"checked":""} onclick="return false;">
+      <div class="t-title">${tk.name}</div>
+      <div class="t-status status-${tk.status}">${tk.status==="done"?"Done":tk.status==="progress"?"In progress":"To do"}</div>
+    </div>`).join("")}
+    <div class="section-title" style="margin-top:14px;">Notes (syncs to HubSpot)</div>
+    ${t.notes.length? t.notes.map(n=>`<div class="note-box">${n}</div>`).join("") : '<div class="note-box" style="color:var(--sub)">No notes yet.</div>'}
+    <textarea rows="2" placeholder="Add a note — use @name to tag a teammate (they'll get an email + Slack alert)"></textarea>
+    <div style="display:flex; gap:8px; margin-top:10px; justify-content:space-between;align-items:center;">
+      <a class="hs-link" href="${hsUrl(t.hsId)}" target="_blank" rel="noopener">Open ${t.id} in HubSpot →</a>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-outline" onclick="closeTicket()">Close</button>
+        <button class="btn-primary">Save note to dashboard & HubSpot</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("ticketOverlay").classList.add("active");
+};
+window.closeTicket = function(){ document.getElementById("ticketOverlay").classList.remove("active"); };
+document.getElementById("ticketOverlay").addEventListener("click", (e)=>{ if(e.target.id==="ticketOverlay") closeTicket(); });
+
+// ================= SETTINGS =================
+function renderSettings(){
+  document.getElementById("rosterTableBody").innerHTML = MANAGERS.map(m=>`
+    <tr>
+      <td>${avatarHtml(m.name)} ${m.name}</td>
+      <td>${m.email}</td>
+      <td><span class="status-dot dot-${m.calStatus}"></span>${m.calStatus==="connected"?"Connected":m.calStatus==="pending"?"Pending confirmation":"Not connected"}</td>
+      <td>${m.calStatus!=="connected" ? '<button class="btn-outline" style="padding:4px 10px;font-size:12px;">Send calendar-add email</button>' : '<span class="m-sub">✓ Added</span>'}</td>
+    </tr>`).join("");
+
+  document.getElementById("emrTableBody").innerHTML = NOTION_EMR_TABLE.map(e=>`
+    <tr><td>${e.system}</td><td>${e.confidence==="Not Yet Migrated"? '<span style="color:var(--red)">Not Yet Migrated</span>' : e.confidence}</td><td>${e.scraper? '<span class="badge badge-scrape">Yes</span>' : 'No'}</td></tr>
+  `).join("") + `<tr><td style="color:var(--sub)">Any EMR not listed here</td><td style="color:var(--red)">Treated as Not Yet Migrated</td><td>No</td></tr>`;
+}
+
+// ================= TABS =================
+document.querySelectorAll("nav.tabs button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    document.getElementById("panel-"+btn.dataset.tab).classList.add("active");
+  });
+});
+
+function updateSyncLabel(){
+  document.getElementById("syncLabel").textContent = "Last synced: today 12:00 AM ET (auto-refresh nightly)";
+}
+document.getElementById("refreshBtn").addEventListener("click", ()=>{
+  alert("This will call the HubSpot, Google Calendar, and Notion APIs once connected, then re-render all views with live data.");
+});
+document.getElementById("runAiBtn").addEventListener("click", ()=>{
+  const code = prompt("Enter access code to run AI capacity model:");
+  if (code === "moxie2026") { alert("Capacity model recalculated using current tickets, EMR complexity, GMV, travel days, and launch-date proximity."); }
+  else if (code !== null) { alert("Incorrect code."); }
+});
+document.getElementById("addPersonBtn").addEventListener("click", ()=>{
+  alert("Adding a person sends you an email with calendar-sharing instructions. Once you confirm, their status moves to Connected here.");
+});
+
+// ================= INIT =================
+updateSyncLabel();
+renderKpis();
+renderWeeklyChart();
+renderSegmentChart();
+renderLaunchingThisMonth();
+renderStageChart();
+renderStageSummary();
+renderChangeTable();
+renderGmvTable();
+renderCompletedLog();
+renderTrendCharts();
+renderPhaseChart();
+populateFilterOptions();
+renderLegend();
+renderCalendarHead();
+renderCalendar();
+renderTravel();
+renderCapacity();
+renderBoard();
+renderSettings();
+
+})();
+</script>
+</body>
+</html>
