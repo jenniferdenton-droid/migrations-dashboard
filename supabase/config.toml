@@ -1,0 +1,10 @@
+project_id = "migrations-dashboard"
+
+[functions.nightly-refresh]
+verify_jwt = false
+
+[functions.calendar-freebusy]
+verify_jwt = true
+
+[functions.slack-notify]
+verify_jwt = true
