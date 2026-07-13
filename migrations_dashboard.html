@@ -5,17 +5,31 @@
 <style>
   :root {
     color-scheme: light;
-    --navy: #1c2b4a;
-    --navy-2: #26385e;
-    --accent: #4f7cff;
-    --amber: #d97706;
-    --red: #dc2626;
-    --green: #16a34a;
-    --bg: #f4f6fb;
+    --emerald-dark: #00362D;
+    --emerald: #004F49;
+    --emerald-light: #71A5A1;
+    --mint: #DEEAE9;
+    --mint-dark: #C0DFDD;
+    --gold: #BB8139;
+    --gold-light: #E8C179;
+    --sunstone: #C46353;
+    --amethyst: #4F0751;
+    --sapphire: #7E1F51;
+    --topaz: #1E4E64;
+    --smoke: #282623;
+    --brown: #4A453F;
+    --light-brown: #726A60;
+    --lighter-brown: #D0C8B7;
+    --beige: #F8F7F4;
+    --bg: #F8F7F4;
     --card: #ffffff;
-    --border: #e2e6f0;
-    --text: #1a2033;
-    --sub: #6b7280;
+    --border: #e7e1d6;
+    --text: #282623;
+    --sub: #726A60;
+    --accent: #BB8139;
+    --red: #C46353;
+    --green: #71A5A1;
+    --amber: #BB8139;
   }
   * { box-sizing: border-box; }
   body {
@@ -25,34 +39,42 @@
   }
   .app { display: flex; flex-direction: column; min-height: 100vh; }
   header {
-    background: var(--navy); color: white; padding: 12px 24px;
+    background: var(--emerald-dark); color: white; padding: 10px 24px;
     display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
   }
   header .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
-  header .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: 8px; flex: none;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold) 60%, #8a5f29);
+    display: flex; align-items: center; justify-content: center;
+    font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 18px; color: white;
+  }
+  .logo-word { height: 20px; display: block; }
+  .brand-sep { color: rgba(255,255,255,.3); font-weight: 400; }
+  .brand-sub { color: rgba(255,255,255,.85); font-weight: 600; font-size: 14px; }
   header .sync { font-size: 11.5px; color: rgba(255,255,255,.65); }
   header .actions { display: flex; gap: 8px; align-items:center; }
   button {
     font-family: inherit; cursor: pointer; border-radius: 8px; border: 1px solid transparent;
     padding: 8px 14px; font-size: 13px; font-weight: 600; transition: all .15s;
   }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { background: #3d68e8; }
+  .btn-primary { background: var(--gold); color: white; }
+  .btn-primary:hover { background: #a3722f; }
   .btn-ghost { background: rgba(255,255,255,.12); color: white; }
   .btn-ghost:hover { background: rgba(255,255,255,.2); }
   .btn-outline { background: white; border-color: var(--border); color: var(--text); }
-  .btn-outline:hover { background: #f0f2f8; }
-  .btn-outline.on { background: var(--navy); color: white; border-color: var(--navy); }
+  .btn-outline:hover { background: #f3f0e9; }
+  .btn-outline.on { background: var(--emerald-dark); color: white; border-color: var(--emerald-dark); }
   .btn-icon { padding: 6px 10px; }
   nav.tabs {
-    display: flex; gap: 4px; background: var(--navy-2); padding: 0 20px;
+    display: flex; gap: 4px; background: var(--emerald); padding: 0 20px;
     overflow-x: auto;
   }
   nav.tabs button {
     background: transparent; color: rgba(255,255,255,.65); border-radius: 0;
     padding: 12px 16px; font-size: 13px; border-bottom: 3px solid transparent; white-space: nowrap;
   }
-  nav.tabs button.active { color: white; border-bottom-color: var(--accent); }
+  nav.tabs button.active { color: white; border-bottom-color: var(--gold); }
   nav.tabs button:hover { color: white; }
   main { flex: 1; padding: 22px 24px 60px; max-width: 1560px; width: 100%; margin: 0 auto; }
   .panel { display: none; }
@@ -60,57 +82,60 @@
   h1.page-title { font-size: 19px; margin: 0 0 4px; }
   .page-sub { color: var(--sub); font-size: 13px; margin: 0 0 18px; }
   .grid { display: grid; gap: 14px; }
-  .kpi-grid { grid-template-columns: repeat(6, 1fr); }
+  .kpi-grid { grid-template-columns: repeat(4, 1fr); }
   .card {
     background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px;
   }
   .kpi .label { font-size: 11.5px; color: var(--sub); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
   .kpi .value { font-size: 24px; font-weight: 700; }
   .kpi .delta { font-size: 12px; margin-top: 4px; }
-  .delta.up { color: var(--red); } .delta.down { color: var(--green); } .delta.flat { color: var(--sub); }
+  .delta.up { color: var(--sunstone); } .delta.down { color: var(--emerald-light); } .delta.flat { color: var(--sub); }
   .two-col { grid-template-columns: 2fr 1fr; margin-top: 16px; }
   .three-col { grid-template-columns: 1fr 1fr 1fr; margin-top: 16px; }
   .chart-wrap { height: 230px; position: relative; }
-  .chart-wrap.sm { height: 180px; }
+  .chart-wrap.sm { height: 190px; }
   .section-title { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
   .section-sub { font-size: 11.5px; color: var(--sub); margin: 0 0 12px; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th { text-align: left; color: var(--sub); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; padding: 8px 10px; border-bottom: 1px solid var(--border); }
-  td { padding: 9px 10px; border-bottom: 1px solid #eef0f6; vertical-align: middle; }
+  td { padding: 9px 10px; border-bottom: 1px solid #f1ede4; vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
-  tr.clickable:hover { background: #f7f9fd; cursor: pointer; }
-  tr.selected { background: #eef3ff; }
+  tr.clickable:hover { background: #faf8f4; cursor: pointer; }
+  tr.selected { background: #f3ede0; }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space:nowrap; }
-  .badge-travel-req { background: #dcfce7; color: var(--green); }
-  .badge-travel-des { background: #fef3c7; color: var(--amber); }
-  .badge-travel-no { background: #f1f2f6; color: var(--sub); }
-  .badge-pushed { background: #fee2e2; color: var(--red); }
-  .badge-moved { background: #dcfce7; color: var(--green); }
-  .badge-flat { background: #f1f2f6; color: var(--sub); }
-  .badge-hold { background: #ffedd5; color: #9a3412; }
-  .badge-scrape { background: #ede9fe; color: #6d28d9; font-weight:800; }
-  .badge-outlier { background: #fee2e2; color: var(--red); }
-  .chip { display: inline-block; background: #eef1f8; border-radius: 6px; padding: 2px 8px; font-size: 11.5px; margin: 2px 4px 0 0; }
+  .badge-travel-req { background: #e6f0ef; color: var(--emerald); }
+  .badge-travel-des { background: #f7ecd9; color: #8a5f29; }
+  .badge-travel-no { background: #f1f0ec; color: var(--sub); }
+  .badge-pushed { background: #f7e6e2; color: var(--sunstone); }
+  .badge-moved { background: #e6f0ef; color: var(--emerald); }
+  .badge-flat { background: #f1f0ec; color: var(--sub); }
+  .badge-hold { background: #f7ecd9; color: #8a5f29; }
+  .badge-scrape { background: #ece1ee; color: var(--amethyst); font-weight:800; }
+  .badge-outlier { background: #f7e6e2; color: var(--sunstone); }
+  .chip { display: inline-block; background: #f1ede4; border-radius: 6px; padding: 2px 8px; font-size: 11.5px; margin: 2px 4px 0 0; }
   .avatar {
     display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:5px;
     font-size:9.5px; font-weight:800; color:white; flex:none;
   }
   .flag-banner {
-    background: #fff8ec; border: 1px solid #f4dfae; color: #8a5a00; padding: 10px 14px; border-radius: 10px; font-size: 12.5px; margin-bottom: 16px;
+    background: #f7ecd9; border: 1px solid #e6cf9e; color: #6b4a1f; padding: 10px 14px; border-radius: 10px; font-size: 12.5px; margin-bottom: 16px;
   }
   .footer-note { color: var(--sub); font-size: 12px; margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--border); }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-  .dot-connected { background: var(--green); } .dot-pending { background: var(--amber); } .dot-none { background: #cbd0dd; }
-  textarea, input[type=text], input[type=date], select {
+  .dot-connected { background: var(--emerald-light); } .dot-pending { background: var(--gold); } .dot-none { background: #cbc3b3; }
+  textarea, input[type=text], input[type=date], input[type=search], input[type=number], select {
     width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; margin-top: 6px;
   }
-  a.hs-link { color: var(--accent); font-weight: 700; text-decoration: none; font-size: 12.5px; }
+  a.hs-link { color: var(--gold); font-weight: 700; text-decoration: none; font-size: 12.5px; }
   a.hs-link:hover { text-decoration: underline; }
-  .expand-row { background: #fbfcff; }
+  .expand-row { background: #fbfaf7; }
   .expand-row td { padding: 14px 18px; }
   .exp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 18px; margin-bottom: 10px; }
   .exp-grid .k { font-size: 10.5px; color: var(--sub); text-transform: uppercase; }
   .exp-grid .v { font-size: 12.5px; font-weight: 600; }
+  .search-bar { display:flex; gap:8px; align-items:center; margin-bottom: 14px; flex-wrap:wrap; }
+  .search-bar input[type=search] { margin-top:0; max-width: 320px; }
+  .search-bar select { margin-top:0; width:auto; padding:8px 10px; }
 
   /* ===== CALENDAR ===== */
   .cal-toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
@@ -123,17 +148,17 @@
   .cal-nav h2 { margin:0; font-size:16px; min-width:150px; text-align:center; }
   .cal-main { display:grid; grid-template-columns: 1fr 300px; gap:16px; align-items:start; }
   .cal-grid-wrap { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-  .cal-headrow { display:grid; grid-template-columns: repeat(7, 1fr) 160px; background:#f7f8fc; border-bottom:1px solid var(--border); }
+  .cal-headrow { display:grid; grid-template-columns: repeat(7, 1fr) 160px; background:#faf8f3; border-bottom:1px solid var(--border); }
   .cal-headrow div { padding:8px 10px; font-size:11px; font-weight:700; color:var(--sub); text-transform:uppercase; }
   .cal-week { display:grid; grid-template-columns: repeat(7, 1fr) 160px; border-bottom:1px solid var(--border); }
   .cal-week:last-child { border-bottom:none; }
   .cal-day {
-    border-right:1px solid #eef0f6; min-height:112px; padding:6px; position:relative; background:white;
+    border-right:1px solid #f1ede4; min-height:112px; padding:6px; position:relative; background:white;
   }
-  .cal-day.other-month { background:#fafbfd; }
+  .cal-day.other-month { background:#fcfbf8; }
   .cal-day .daynum { font-size:11.5px; color:var(--sub); font-weight:700; margin-bottom:4px; }
-  .cal-day.today .daynum { color:var(--accent); }
-  .cal-day.today { background:#eef3ff; }
+  .cal-day.today .daynum { color:var(--gold); }
+  .cal-day.today { background:#fbf3e2; }
   .cal-card {
     border-radius:6px; padding:3px 5px; margin-bottom:3px; font-size:10px;
     font-weight:600; cursor:pointer; overflow:hidden;
@@ -142,91 +167,104 @@
   .cal-card .cname { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .cal-card .row2 { font-size:9px; opacity:.8; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .cal-more { font-size:10.5px; color:var(--sub); padding-left:4px; cursor:pointer; }
-  .cal-weeksum { padding:8px 10px; background:#f7f8fc; font-size:11px; color:var(--sub); }
+  .cal-weeksum { padding:8px 10px; background:#faf8f3; font-size:11px; color:var(--sub); }
   .cal-weeksum b { color:var(--text); display:block; font-size:12.5px; margin-bottom:4px; }
   .cal-weeksum .owner-row { display:flex; justify-content:space-between; }
   .cal-side { display:flex; flex-direction:column; gap:14px; }
   .side-panel { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; max-height:320px; overflow-y:auto; }
   .side-panel .side-head { display:flex; justify-content:space-between; align-items:center; font-size:12.5px; font-weight:800; margin-bottom:8px; position:sticky; top:-13px; background:var(--card); padding-bottom:4px; }
-  .side-panel .side-head .count { background:#f1f2f6; border-radius:10px; padding:1px 8px; font-size:11px; }
-  .side-item { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #f2f3f8; cursor:pointer; }
+  .side-panel .side-head .count { background:#f1ede4; border-radius:10px; padding:1px 8px; font-size:11px; }
+  .side-item { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #f2efe8; cursor:pointer; }
   .side-item:last-child { border-bottom:none; }
   .side-item .si-name { font-size:12px; font-weight:700; }
   .side-item .si-sub { font-size:10.5px; color:var(--sub); }
-  .side-updates .side-head { color:var(--navy); }
-  .side-noLaunch .side-head { color:#166534; }
-  .side-hold .side-head { color:#9a3412; }
+  .side-updates .side-head { color:var(--emerald-dark); }
+  .side-noLaunch .side-head { color:var(--emerald); }
+  .side-hold .side-head { color:#8a5f29; }
 
   /* ===== TRAVEL ===== */
   .travel-month { margin-bottom:18px; }
-  .travel-month h3 { font-size:13.5px; margin:0 0 8px; color:var(--navy); }
+  .travel-month h3 { font-size:13.5px; margin:0 0 8px; color:var(--emerald-dark); }
   .travel-row {
-    display:grid; grid-template-columns: 26px 1.2fr .9fr .8fr .8fr .8fr .8fr 1fr; gap:8px; align-items:center;
+    display:grid; grid-template-columns: 26px 1.1fr .85fr .7fr .7fr 1fr .7fr 1fr; gap:8px; align-items:center;
     background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 12px; margin-bottom:6px; font-size:12px;
   }
   .travel-row.header { background:transparent; border:none; color:var(--sub); font-weight:700; text-transform:uppercase; font-size:10px; padding:0 12px; }
-  .travel-row input[type=text], .travel-row input[type=date] { margin:0; padding:5px 8px; font-size:11.5px; }
+  .travel-row input[type=text], .travel-row input[type=date] { margin:0; padding:5px 8px; font-size:11px; }
+  .travel-dates-cell { display:flex; flex-direction:column; gap:3px; }
+  .travel-dates-cell .lbl { font-size:9px; color:var(--sub); text-transform:uppercase; }
 
   /* ===== CAPACITY (Float-style timeline) ===== */
   .cap-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
   .cap-timeline { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow-x:auto; }
-  .cap-tl-head { display:grid; grid-template-columns: 210px repeat(6, 1fr); border-bottom:1px solid var(--border); background:#f7f8fc; min-width:900px; }
+  .cap-tl-head { display:grid; grid-template-columns: 210px repeat(6, 1fr); border-bottom:1px solid var(--border); background:#faf8f3; min-width:900px; }
   .cap-tl-head div { padding:8px 10px; font-size:11px; font-weight:700; color:var(--sub); text-transform:uppercase; text-align:center; }
   .cap-tl-head div:first-child { text-align:left; }
-  .cap-tl-row { display:grid; grid-template-columns: 210px repeat(6, 1fr); border-bottom:1px solid #eef0f6; min-width:900px; }
+  .cap-tl-row { display:grid; grid-template-columns: 210px repeat(6, 1fr); border-bottom:1px solid #f1ede4; min-width:900px; }
   .cap-tl-row:last-child { border-bottom:none; }
-  .cap-tl-mgr { padding:10px; display:flex; align-items:center; gap:8px; border-right:1px solid var(--border); }
+  .cap-tl-mgr { padding:10px; display:flex; align-items:center; gap:8px; border-right:1px solid var(--border); cursor:pointer; }
+  .cap-tl-mgr:hover { background:#faf8f3; }
   .cap-tl-mgr .m-name { font-weight:700; font-size:12.5px; }
   .cap-tl-mgr .m-sub { font-size:10.5px; color:var(--sub); }
-  .cap-tl-cell { border-right:1px solid #f2f3f8; padding:6px; min-height:86px; display:flex; flex-direction:column; gap:2px; justify-content:flex-end; position:relative; }
+  .cap-tl-cell { border-right:1px solid #f2efe8; padding:6px; min-height:86px; display:flex; flex-direction:column; gap:2px; justify-content:flex-end; position:relative; }
   .cap-tl-cell .wk-total { position:absolute; top:4px; left:6px; font-size:10px; font-weight:800; padding:1px 6px; border-radius:6px; }
-  .tot-ok { background:#dcfce7; color:var(--green); } .tot-warn { background:#fef3c7; color:var(--amber); } .tot-over { background:#fee2e2; color:var(--red); }
+  .tot-ok { background:#e6f0ef; color:var(--emerald); } .tot-warn { background:#f7ecd9; color:#8a5f29; } .tot-over { background:#f7e6e2; color:var(--sunstone); }
   .cap-bar { border-radius:4px; font-size:9.5px; color:white; font-weight:700; padding:2px 5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; }
   .cap-legend { display:flex; gap:12px; flex-wrap:wrap; font-size:11.5px; color:var(--sub); margin-top:10px; }
   .cap-legend .item { display:flex; align-items:center; gap:5px; }
   .cap-legend .sw { width:10px; height:10px; border-radius:3px; }
 
   /* ===== Pipeline board ===== */
-  .board { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; overflow-x: auto; }
-  .col { background: #eef0f7; border-radius: 10px; padding: 10px; min-width: 190px; }
-  .col-head { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .board { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+  .col { background: #f1ede4; border-radius: 10px; padding: 10px; min-width: 210px; flex: 0 0 210px; }
+  .col-head { font-size: 12px; font-weight: 700; color: var(--emerald-dark); margin-bottom: 8px; display: flex; justify-content: space-between; }
   .ticket-card {
     background: white; border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; margin-bottom: 8px; cursor: pointer;
     transition: box-shadow .1s;
   }
-  .ticket-card:hover { box-shadow: 0 2px 8px rgba(20,30,60,.1); }
+  .ticket-card:hover { box-shadow: 0 2px 8px rgba(40,38,35,.12); }
   .ticket-card .t-name { font-weight: 700; font-size: 12.5px; }
   .ticket-card .t-meta { font-size: 11px; color: var(--sub); margin-top: 3px; }
 
   /* ===== Modal ===== */
   .overlay {
-    display: none; position: fixed; inset: 0; background: rgba(15,20,35,.45); z-index: 50;
+    display: none; position: fixed; inset: 0; background: rgba(40,38,35,.5); z-index: 50;
     align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto;
   }
   .overlay.active { display: flex; }
   .modal { background: white; border-radius: 14px; width: 100%; max-width: 660px; padding: 22px 24px; }
+  .modal.wide { max-width: 860px; }
   .modal-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
   .modal-head h2 { margin: 0; font-size: 17px; }
   .close-x { background: none; border: none; font-size: 18px; color: var(--sub); padding: 0 4px; }
   .kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin: 14px 0; }
   .kv-grid .k { font-size: 11px; color: var(--sub); text-transform: uppercase; }
   .kv-grid .v { font-size: 13px; font-weight: 600; }
-  .task-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f1f6; }
+  .task-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1ede4; }
   .task-row:last-child { border-bottom: none; }
   .task-row input[type=checkbox] { width: 16px; height: 16px; }
   .task-row .t-title { font-size: 13px; font-weight: 600; flex: 1; }
   .task-row .t-status { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
-  .status-done { background: #dcfce7; color: var(--green); }
-  .status-progress { background: #fef3c7; color: var(--amber); }
-  .status-todo { background: #f1f2f6; color: var(--sub); }
-  .note-box { background: #f7f8fc; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; margin-top: 4px; color: #333; white-space:pre-wrap; }
+  .status-done { background: #e6f0ef; color: var(--emerald); }
+  .status-progress { background: #f7ecd9; color: #8a5f29; }
+  .status-todo { background: #f1ede4; color: var(--sub); }
+  .note-box { background: #faf8f3; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; margin-top: 4px; color: #333; white-space:pre-wrap; }
+  .settings-lock { text-align:center; padding: 60px 20px; color: var(--sub); }
+  .settings-lock .lock-icon { font-size: 34px; margin-bottom: 10px; }
+  .cf-table td, .cf-table th { padding: 7px 10px; }
+  .cf-table input[type=number] { margin: 0; padding: 5px 8px; width: 80px; }
 </style>
 </head>
 <body>
 <div class="app">
 
 <header>
-  <div class="brand"><span class="dot"></span> Moxie Migrations Dashboard</div>
+  <div class="brand">
+    <span class="logo-mark">M</span>
+    <img class="logo-word" alt="Moxie" src="data:image/png;base64,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">
+    <span class="brand-sep">|</span>
+    <span class="brand-sub">Migrations Dashboard</span>
+  </div>
   <div class="sync" id="syncLabel"></div>
   <div class="actions">
     <button class="btn-ghost" id="refreshBtn">↻ Refresh from HubSpot / Calendar / Notion</button>
@@ -235,7 +273,7 @@
 </header>
 
 <nav class="tabs">
-  <button data-tab="main" class="active">Main Dashboard</button>
+  <button data-tab="home" class="active">Home</button>
   <button data-tab="calendar">Launch Calendar</button>
   <button data-tab="travel">Travel</button>
   <button data-tab="capacity">Manager Capacity</button>
@@ -249,10 +287,21 @@
   Prototype view — populated with sample data so layout and logic can be reviewed before wiring up live HubSpot, Google Calendar, and Notion connections. Auto-refresh is set to run nightly at 12:00 AM ET once deployed (Vercel Cron) — this preview just shows a "last synced" timestamp for now.
 </div>
 
-<!-- MAIN DASHBOARD -->
-<div class="panel active" id="panel-main">
-  <h1 class="page-title">Main Dashboard</h1>
-  <p class="page-sub">Snapshot across all active migrations</p>
+<!-- HOME -->
+<div class="panel active" id="panel-home">
+  <h1 class="page-title">Home</h1>
+  <p class="page-sub">Snapshot across all active migrations · Pre-launch + Onboarding accounts</p>
+
+  <div class="search-bar">
+    <input type="search" id="practiceSearch" placeholder="Search practice / medspa name...">
+  </div>
+  <div id="practiceSearchResults" style="display:none; margin-bottom:16px;" class="card">
+    <div class="section-title">Search results</div>
+    <table>
+      <thead><tr><th>Client</th><th>Segment</th><th>Manager</th><th>Stage</th><th>Launch date</th></tr></thead>
+      <tbody id="practiceSearchBody"></tbody>
+    </table>
+  </div>
 
   <div class="grid kpi-grid" id="kpiGrid"></div>
 
@@ -322,7 +371,7 @@
       <div class="delta flat" id="completed60gmv"></div>
     </div>
     <div class="card kpi">
-      <div class="label">Avg days to complete (all-time)</div>
+      <div class="label">Avg days to complete (last 30 days)</div>
       <div class="value" id="avgDaysAll"></div>
       <div class="delta flat">create date to migration_complete_date</div>
     </div>
@@ -413,18 +462,21 @@
 <!-- TRAVEL -->
 <div class="panel" id="panel-travel">
   <h1 class="page-title">Travel Requirements</h1>
-  <p class="page-sub">Required if $100K+ GMV or EMR not yet migrated per Notion EMR tracker · desired otherwise</p>
+  <p class="page-sub">Required if $100K+ GMV or EMR not yet migrated per Notion EMR tracker · desired otherwise · travel dates are filled in manually below</p>
   <div id="travelBody"></div>
 </div>
 
 <!-- CAPACITY -->
 <div class="panel" id="panel-capacity">
   <h1 class="page-title">Migration Manager Capacity</h1>
-  <p class="page-sub">Target: ~40 hrs/week per manager · weighted by segment, EMR complexity, GMV, proximity to launch date, and travel days</p>
+  <p class="page-sub">Weighted by complexity score, segment, EMR migration history, GMV, launch-date proximity, and travel days — all editable in Settings</p>
 
   <div class="cap-toolbar">
     <div class="section-title" style="margin:0;">Weekly workload timeline</div>
-    <div class="cap-legend" id="capLegendTop"></div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <select id="filterCapManager" style="width:auto; margin-top:0; padding:6px 10px; font-size:12.5px;"><option value="all">Manager: All</option></select>
+      <div class="cap-legend" id="capLegendTop"></div>
+    </div>
   </div>
 
   <div class="cap-timeline">
@@ -447,30 +499,79 @@
 <div class="panel" id="panel-pipeline">
   <h1 class="page-title">Pipeline & Tasks</h1>
   <p class="page-sub">Mirrors the HubSpot ticket board · click any card to open tasks, notes, and ticket detail</p>
+  <div class="search-bar">
+    <input type="search" id="pipelineSearch" placeholder="Search medspa name, number, or segment...">
+    <select id="pipelineManagerFilter"><option value="all">Manager: All</option></select>
+  </div>
   <div class="board" id="board"></div>
 </div>
 
 <!-- SETTINGS -->
 <div class="panel" id="panel-settings">
-  <h1 class="page-title">Settings</h1>
-  <p class="page-sub">Access-controlled · manager roster, calendar onboarding, EMR complexity table</p>
-
-  <div class="card" style="margin-bottom:16px;">
-    <div class="section-title">Migration Manager Roster & Calendar Access</div>
-    <table>
-      <thead><tr><th>Name</th><th>Email</th><th>Calendar status</th><th>Action</th></tr></thead>
-      <tbody id="rosterTableBody"></tbody>
-    </table>
-    <button class="btn-outline" style="margin-top:10px;" id="addPersonBtn">+ Add person</button>
+  <div id="settingsLocked" class="settings-lock">
+    <div class="lock-icon">🔒</div>
+    <div class="section-title">Settings is password protected</div>
+    <p class="page-sub">Enter the settings password to view manager roster, EMR table, and capacity factors.</p>
+    <button class="btn-primary" id="unlockSettingsBtn">Enter password</button>
   </div>
+  <div id="settingsContent" style="display:none;">
+    <h1 class="page-title">Settings</h1>
+    <p class="page-sub">Manager roster, calendar onboarding, EMR complexity table, and capacity factors</p>
 
-  <div class="card">
-    <div class="section-title">EMR Confidence & Scraper Table (from Notion)</div>
-    <div class="section-sub">EMR matched to HubSpot Current EMR · not found here = treated as not yet migrated</div>
-    <table>
-      <thead><tr><th>System</th><th>Confidence level</th><th>Has scraper</th></tr></thead>
-      <tbody id="emrTableBody"></tbody>
-    </table>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="section-title">Migration Manager Roster & Calendar Access</div>
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Calendar status</th><th>Action</th></tr></thead>
+        <tbody id="rosterTableBody"></tbody>
+      </table>
+      <button class="btn-outline" style="margin-top:10px;" id="addPersonBtn">+ Add person</button>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="section-title">EMR Confidence & Scraper Table (from Notion)</div>
+      <div class="section-sub">EMR matched to HubSpot Current EMR · not found here = treated as not yet migrated</div>
+      <table>
+        <thead><tr><th>System</th><th>Confidence level</th><th>Has scraper</th></tr></thead>
+        <tbody id="emrTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="section-title">Capacity factors — complexity score ranges</div>
+      <div class="section-sub">Hours per week assigned based on a ticket's Migration Complexity Score. Editable.</div>
+      <table class="cf-table">
+        <thead><tr><th>Range</th><th>Hours / week</th></tr></thead>
+        <tbody id="complexityRangeBody"></tbody>
+      </table>
+    </div>
+
+    <div class="grid two-col" style="grid-template-columns: 1fr 1fr; margin-top:0;">
+      <div class="card">
+        <div class="section-title">Capacity factors — EMR migrated before?</div>
+        <div class="section-sub">Hours per week added depending on whether the EMR has been migrated before.</div>
+        <table class="cf-table">
+          <thead><tr><th>Migrated before</th><th>Hours / week</th></tr></thead>
+          <tbody id="emrMigratedHoursBody"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="section-title">Capacity factors — hours per segment</div>
+        <div class="section-sub">Base hours per week by provider segment.</div>
+        <table class="cf-table">
+          <thead><tr><th>Segment</th><th>Hours / week</th></tr></thead>
+          <tbody id="segmentHoursBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="section-title">Capacity factors — travel</div>
+      <div class="section-sub">Extra days of work added to a manager's week when travel is required for a launch.</div>
+      <label style="font-size:12.5px; font-weight:600;">Travel required adds
+        <input type="number" id="travelExtraDaysInput" min="0" step="0.5" style="width:70px; display:inline-block; margin:0 4px;">
+        days of work
+      </label>
+    </div>
   </div>
 </div>
 
@@ -482,7 +583,7 @@
 
 </div>
 
-<!-- Ticket Modal -->
+<!-- Ticket / Manager Modal -->
 <div class="overlay" id="ticketOverlay">
   <div class="modal" id="ticketModal"></div>
 </div>
@@ -494,13 +595,13 @@
 // ================= REFERENCE DATA =================
 const SEGMENTS = ["Enterprise","Gold","Silver","Experienced","Growth","Beginner","No Segment"];
 const SEG_COLOR = {
-  "Enterprise":  {bg:"#fecaca", text:"#7f1d1d", dot:"#ef4444"},
-  "Gold":        {bg:"#fef9c3", text:"#713f12", dot:"#eab308"},
-  "Silver":      {bg:"#e2e8f0", text:"#334155", dot:"#94a3b8"},
-  "Experienced": {bg:"#dbeafe", text:"#1e3a8a", dot:"#3b82f6"},
-  "Growth":      {bg:"#bbf7d0", text:"#14532d", dot:"#22c55e"},
-  "Beginner":    {bg:"#f3e8ff", text:"#581c87", dot:"#a855f7"},
-  "No Segment":  {bg:"#e5e7eb", text:"#374151", dot:"#9ca3af"},
+  "Enterprise":  {bg:"#f3e0ea", text:"#7E1F51", dot:"#7E1F51"},
+  "Gold":        {bg:"#faf1e0", text:"#8a5f29", dot:"#BB8139"},
+  "Silver":      {bg:"#ece9e3", text:"#4A453F", dot:"#9c9186"},
+  "Experienced": {bg:"#e3ebee", text:"#1E4E64", dot:"#1E4E64"},
+  "Growth":      {bg:"#e6f0ef", text:"#004F49", dot:"#71A5A1"},
+  "Beginner":    {bg:"#efe1ee", text:"#4F0751", dot:"#4F0751"},
+  "No Segment":  {bg:"#f2efe8", text:"#4A453F", dot:"#D0C8B7"},
 };
 function segBadge(seg){
   const c = SEG_COLOR[seg] || SEG_COLOR["No Segment"];
@@ -513,7 +614,7 @@ const STAGES = ["Migration Requested","Migration Scoping","Service Menu Mapping"
   "Past Appointment Migration Execution","All Other Data Migration","File Migration Execution",
   "Internal Quality Review","Client Review","Reworking","Migration Complete","Closed - Churned/Canceled"];
 
-const AVATAR_COLORS = ["#f97316","#22c55e","#0ea5e9","#a855f7","#e11d48","#0d9488","#6366f1","#ca8a04"];
+const AVATAR_COLORS = ["#BB8139","#71A5A1","#1E4E64","#7E1F51","#C46353","#4F0751","#004F49","#726A60"];
 function initialsOf(name){
   if (!name) return "—";
   const parts = name.trim().split(/\s+/);
@@ -522,7 +623,7 @@ function initialsOf(name){
 const avatarColorCache = {};
 let avatarColorIdx = 0;
 function avatarHtml(name){
-  if (!name) return `<span class="avatar" style="background:#cbd0dd">—</span>`;
+  if (!name) return `<span class="avatar" style="background:#cbc3b3">—</span>`;
   if (!(name in avatarColorCache)) { avatarColorCache[name] = AVATAR_COLORS[avatarColorIdx % AVATAR_COLORS.length]; avatarColorIdx++; }
   return `<span class="avatar" style="background:${avatarColorCache[name]}" title="${name}">${initialsOf(name)}</span>`;
 }
@@ -558,7 +659,8 @@ const MANAGERS = [
 const today = new Date(2026, 6, 10); // Jul 10, 2026
 function dt(y,m,day){ return new Date(y,m,day); }
 function fmt(d){ return d ? d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "—"; }
-function ymd(d){ return d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}` : null; }
+function ymd(d){ return d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}` : ""; }
+function parseYmd(s){ if(!s) return null; const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
 function daysBetween(a,b){ if(!a||!b) return null; return Math.round((b-a)/86400000); }
 function hsUrl(hsId){ return `https://app.hubspot.com/contacts/22420370/record/0-5/${hsId}`; }
 
@@ -624,14 +726,25 @@ const DAYS_TREND_12MO = [
   {month:"May '26", avgDays:49}, {month:"Jun '26", avgDays:45}, {month:"Jul '26", avgDays:43},
 ];
 
+// ================= CAPACITY SETTINGS (editable in Settings tab) =================
+const CAPACITY_SETTINGS = {
+  complexityRanges: [
+    {min:0, max:2, hours:4},
+    {min:2, max:4, hours:6},
+    {min:4, max:6, hours:8},
+    {min:6, max:8, hours:10},
+    {min:8, max:10.01, hours:14},
+  ],
+  segmentHours: {"Enterprise":10, "Gold":8, "Silver":7, "Experienced":6, "Growth":5, "Beginner":4, "No Segment":3},
+  emrMigratedHours: {yes:4, no:10},
+  travelExtraDays: 2,
+};
+function complexityRangeHours(score){
+  const row = CAPACITY_SETTINGS.complexityRanges.find(r => score >= r.min && score < r.max);
+  return row ? row.hours : CAPACITY_SETTINGS.complexityRanges[CAPACITY_SETTINGS.complexityRanges.length-1].hours;
+}
+
 // ================= CAPACITY MODEL =================
-function segmentBase(seg){
-  return seg==="Enterprise" ? 10 : seg==="Gold" ? 8 : seg==="Silver" ? 7 : seg==="Experienced" ? 6 : seg==="Growth" ? 5 : seg==="Beginner" ? 4 : 3;
-}
-function emrWeight(emr){
-  // Rough weight: not-yet-migrated EMRs (per Notion) carry more manual work.
-  return emrMigrated(emr) ? 4 : 8;
-}
 function proximityMultiplier(launchDate, weekOffset){
   if (!launchDate) return 0.6;
   const days = Math.round((launchDate-today)/86400000) - weekOffset*7;
@@ -640,14 +753,17 @@ function proximityMultiplier(launchDate, weekOffset){
   if (days <= 30) return 1.1;
   return 0.85;
 }
+function travelRequired(t){
+  return t.gmv >= 100000 || !emrMigrated(t.emr) || !!t.travelDates;
+}
 function ticketHoursForWeek(t, weekOffset){
   if (!t.launch) return 0;
-  const base = segmentBase(t.segment);
-  const emrW = emrWeight(t.emr) * 1.3;
-  const gmvBump = t.gmv >= 100000 ? 4 : 0;
-  const travelBump = t.travelDates ? 3 : 0;
+  const complexityHours = complexityRangeHours(t.complexity);
+  const segHours = CAPACITY_SETTINGS.segmentHours[t.segment] ?? 3;
+  const migratedHours = emrMigrated(t.emr) ? CAPACITY_SETTINGS.emrMigratedHours.yes : CAPACITY_SETTINGS.emrMigratedHours.no;
+  const travelHours = travelRequired(t) ? CAPACITY_SETTINGS.travelExtraDays * 8 : 0;
   const prox = proximityMultiplier(t.launch, weekOffset);
-  return Math.round((base + emrW + gmvBump + travelBump) * prox * 10) / 10;
+  return Math.round((complexityHours + segHours + migratedHours + travelHours) * prox * 10) / 10;
 }
 function weekBucket(d){
   if (!d) return null;
@@ -668,10 +784,62 @@ function calWeekBucket(d){
   return Math.round((dMon-thisMon)/86400000/7);
 }
 
+// ================= CHART.JS INLINE PLUGINS (no external plugin lib) =================
+// Draws the column total above each stacked bar.
+const stackTotalLabelPlugin = {
+  id: "stackTotalLabel",
+  afterDatasetsDraw(chart){
+    const {ctx, data, scales} = chart;
+    ctx.save();
+    ctx.font = "700 10.5px -apple-system, sans-serif";
+    ctx.fillStyle = "#282623";
+    ctx.textAlign = "center";
+    data.labels.forEach((label, i) => {
+      let total = 0;
+      let topY = null;
+      data.datasets.forEach(ds => {
+        const meta = chart.getDatasetMeta(chart.data.datasets.indexOf(ds));
+        if (meta.hidden) return;
+        const v = ds.data[i] || 0;
+        total += v;
+        const el = meta.data[i];
+        if (el && (topY === null || el.y < topY)) topY = el.y;
+      });
+      if (topY !== null && total > 0){
+        ctx.fillText(total.toLocaleString(), scales.x.getPixelForValue(i), topY - 6);
+      }
+    });
+    ctx.restore();
+  }
+};
+// Draws the value above each point on a line chart.
+const linePointLabelPlugin = {
+  id: "linePointLabel",
+  afterDatasetsDraw(chart){
+    const {ctx} = chart;
+    ctx.save();
+    ctx.font = "700 10px -apple-system, sans-serif";
+    ctx.fillStyle = "#004F49";
+    ctx.textAlign = "center";
+    chart.data.datasets.forEach((ds, dsIndex) => {
+      const meta = chart.getDatasetMeta(dsIndex);
+      meta.data.forEach((el, i) => {
+        ctx.fillText(String(ds.data[i]), el.x, el.y - 8);
+      });
+    });
+    ctx.restore();
+  }
+};
+
 // ================= STATE =================
 let calYear = today.getFullYear(), calMonth = today.getMonth();
 let filters = { stage:"all", owner:"all", segment:"all", lifecycle:"all" };
 let stageDrilldownStage = null;
+let capManagerFilter = "all";
+let pipelineSearchQuery = "";
+let pipelineManagerFilter = "all";
+let settingsUnlocked = false;
+const SETTINGS_PASSWORD = "moxie2026";
 
 function filteredTickets(){
   return TICKETS.filter(t=>
@@ -682,21 +850,27 @@ function filteredTickets(){
   );
 }
 
-// ================= MAIN DASHBOARD =================
+// ================= HOME =================
 function renderKpis(){
-  const assigned = TICKETS.filter(t=>t.manager).length;
-  const launchingSoon = TICKETS.filter(t=> t.launch && (t.launch-today)/86400000 <= 14 && (t.launch-today)/86400000 >= 0).length;
+  const activeTickets = t => t.stage!=="Migration Complete" && t.stage!=="Closed - Churned/Canceled";
+  const inNext = (days) => TICKETS.filter(t => activeTickets(t) && t.launch && (t.launch-today)/86400000 >= 0 && (t.launch-today)/86400000 <= days);
+  const next7 = inNext(7), next14 = inNext(14), next30 = inNext(30);
+  const unknownLaunch = TICKETS.filter(t => activeTickets(t) && !t.launch);
   const pushed = TICKETS.filter(t=> t.launch && t.prevLaunch && +t.launch > +t.prevLaunch).length;
   const movedUp = TICKETS.filter(t=> t.launch && t.prevLaunch && +t.launch < +t.prevLaunch).length;
-  const totalGmv = TICKETS.filter(t=>t.stage!=="Migration Complete" && t.stage!=="Closed - Churned/Canceled").reduce((s,t)=>s+t.gmv,0);
-  const byEnterprise = TICKETS.filter(t=>t.segment==="Enterprise" && t.stage!=="Migration Complete").length;
-  const unassignedEnt = TICKETS.filter(t=>!t.manager && t.segment==="Enterprise" && t.stage!=="Migration Complete").length;
+  const totalGmv = TICKETS.filter(activeTickets).reduce((s,t)=>s+t.gmv,0);
+  const byEnterprise = TICKETS.filter(t=>t.segment==="Enterprise" && activeTickets(t)).length;
+  const unassignedEnt = TICKETS.filter(t=>!t.manager && t.segment==="Enterprise" && activeTickets(t)).length;
+
+  const gmvOf = arr => "$"+(arr.reduce((s,t)=>s+t.gmv,0)/1000).toFixed(0)+"K GMV";
 
   const kpis = [
-    {label:"Total Assigned", value:assigned, delta:`${TICKETS.length-assigned} unassigned`, cls:"flat"},
-    {label:"Launching Next 14d", value:launchingSoon, delta:"across all segments", cls:"flat"},
-    {label:"Date Changed (30d)", value:pushed+movedUp, delta:`${pushed} pushed back, ${movedUp} moved up`, cls:"up"},
+    {label:"Launching Next 7 Days", value:next7.length, delta:gmvOf(next7), cls:"flat"},
+    {label:"Launching Next 14 Days", value:next14.length, delta:gmvOf(next14), cls:"flat"},
+    {label:"Launching Next 30 Days", value:next30.length, delta:gmvOf(next30), cls:"flat"},
+    {label:"Unknown Launch Date", value:unknownLaunch.length, delta:"no target set", cls:"up"},
     {label:"Total GMV to Launch", value:"$"+(totalGmv/1000).toFixed(0)+"K", delta:"open pipeline", cls:"flat"},
+    {label:"Launch Date Changes (30d)", value:pushed+movedUp, delta:`${pushed} pushed back, ${movedUp} moved up`, cls:"up"},
     {label:"Enterprise Launches", value:byEnterprise, delta:"priority tier", cls:"flat"},
     {label:"Unassigned Enterprise", value:unassignedEnt, delta:"needs manager", cls:"up"},
   ];
@@ -706,6 +880,20 @@ function renderKpis(){
       <div class="value">${k.value}</div>
       <div class="delta ${k.cls}">${k.delta}</div>
     </div>`).join("");
+}
+function renderPracticeSearch(){
+  const input = document.getElementById("practiceSearch");
+  const wrap = document.getElementById("practiceSearchResults");
+  const body = document.getElementById("practiceSearchBody");
+  input.addEventListener("input", ()=>{
+    const q = input.value.trim().toLowerCase();
+    if (!q){ wrap.style.display = "none"; return; }
+    const matches = TICKETS.filter(t => t.client.toLowerCase().includes(q) || t.medspaId.includes(q));
+    wrap.style.display = "block";
+    body.innerHTML = matches.length ? matches.map(t=>`
+      <tr class="clickable" onclick="openTicket('${t.id}')"><td>${t.client}</td><td>${segBadge(t.segment)}</td><td>${t.manager||"Unassigned"}</td><td>${t.stage}</td><td>${fmt(t.launch)}</td></tr>
+    `).join("") : `<tr><td colspan="5" style="color:var(--sub)">No matching practices.</td></tr>`;
+  });
 }
 function renderWeeklyChart(){
   const buckets = [0,1,2,3,4,5];
@@ -723,8 +911,8 @@ function renderWeeklyChart(){
   new Chart(document.getElementById("weeklyChart"), {
     type:"bar",
     data:{ labels, datasets:[
-      {label:"Launches", data:counts, backgroundColor:"#4f7cff", yAxisID:"y", borderRadius:5},
-      {label:"Avg complexity", data:avgComp, type:"line", borderColor:"#d97706", backgroundColor:"#d97706", yAxisID:"y1", tension:.3}
+      {label:"Launches", data:counts, backgroundColor:"#BB8139", yAxisID:"y", borderRadius:5},
+      {label:"Avg complexity", data:avgComp, type:"line", borderColor:"#1E4E64", backgroundColor:"#1E4E64", yAxisID:"y1", tension:.3}
     ]},
     options:{ responsive:true, maintainAspectRatio:false,
       scales:{ y:{beginAtZero:true, title:{display:true,text:"Launches"}}, y1:{beginAtZero:true, position:"right", grid:{drawOnChartArea:false}, title:{display:true,text:"Avg complexity"}}},
@@ -796,9 +984,9 @@ window.toggleExpandRow = function(id){
 
 function renderStageChart(){
   const counts = STAGES.map(s=>TICKETS.filter(t=>t.stage===s).length);
-  const chart = new Chart(document.getElementById("stageChart"), {
+  new Chart(document.getElementById("stageChart"), {
     type:"bar",
-    data:{ labels:STAGES, datasets:[{label:"Tickets", data:counts, backgroundColor:"#4f7cff", borderRadius:4}]},
+    data:{ labels:STAGES, datasets:[{label:"Tickets", data:counts, backgroundColor:"#BB8139", borderRadius:4}]},
     options:{ responsive:true, maintainAspectRatio:false,
       scales:{ x:{ ticks:{ font:{size:9.5}, maxRotation:60, minRotation:60 } }, y:{beginAtZero:true} },
       plugins:{legend:{display:false}},
@@ -835,21 +1023,22 @@ function renderCompletedLog(){
   document.getElementById("completed30gmv").textContent = "$"+(c30.reduce((s,t)=>s+t.gmv,0)/1000).toFixed(0)+"K GMV";
   document.getElementById("completed60").textContent = c60.length;
   document.getElementById("completed60gmv").textContent = "$"+(c60.reduce((s,t)=>s+t.gmv,0)/1000).toFixed(0)+"K GMV";
-  const withDays = completed.map(t=>daysBetween(t.createDate,t.completeDate)).filter(d=>d!=null);
-  const avgAll = withDays.length ? Math.round(withDays.reduce((a,b)=>a+b,0)/withDays.length) : 0;
-  document.getElementById("avgDaysAll").textContent = avgAll + "d";
 
-  // Outlier managers
+  // Avg days to complete — last 30 days (per your request, not all-time)
+  const days30 = c30.map(t=>daysBetween(t.createDate,t.completeDate)).filter(d=>d!=null);
+  const avg30 = days30.length ? Math.round(days30.reduce((a,b)=>a+b,0)/days30.length) : 0;
+  document.getElementById("avgDaysAll").textContent = avg30 + "d";
+
+  // Outlier managers (based on the last-30-days population, matching the KPI above)
   const byMgr = {};
-  completed.forEach(t=>{ const d=daysBetween(t.createDate,t.completeDate); if(d==null) return; const k=t.manager||"Unassigned"; byMgr[k]=byMgr[k]||[]; byMgr[k].push(d); });
-  const overallAvg = avgAll;
-  document.getElementById("outlierAvgLabel").textContent = `Team average: ${overallAvg} days`;
+  c30.forEach(t=>{ const d=daysBetween(t.createDate,t.completeDate); if(d==null) return; const k=t.manager||"Unassigned"; byMgr[k]=byMgr[k]||[]; byMgr[k].push(d); });
+  document.getElementById("outlierAvgLabel").textContent = `Team average (last 30 days): ${avg30} days`;
   const rows = Object.entries(byMgr).map(([mgr,days])=>{
     const avg = Math.round(days.reduce((a,b)=>a+b,0)/days.length);
-    return {mgr, avg, n:days.length, isOutlier: avg > overallAvg};
+    return {mgr, avg, n:days.length, isOutlier: avg > avg30};
   }).filter(r=>r.isOutlier).sort((a,b)=>b.avg-a.avg);
   document.getElementById("outlierBody").innerHTML = rows.length ? rows.map(r=>`
-    <tr><td>${r.mgr}</td><td>${r.avg}d</td><td><span class="badge badge-outlier">+${r.avg-overallAvg}d</span></td><td>${r.n}</td></tr>
+    <tr><td>${r.mgr}</td><td>${r.avg}d</td><td><span class="badge badge-outlier">+${r.avg-avg30}d</span></td><td>${r.n}</td></tr>
   `).join("") : `<tr><td colspan="4" style="color:var(--sub)">No managers currently above the team average.</td></tr>`;
 }
 
@@ -861,19 +1050,22 @@ function renderTrendCharts(){
     data:{ labels:months, datasets: SEGMENTS.slice(0,6).map((seg,i)=>({
       label:seg, data: MONTHLY_TRENDS.map(m=>m.volume[seg]||0), backgroundColor: segColors[i], stack:"v"
     }))},
-    options:{ responsive:true, maintainAspectRatio:false, scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}, plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}} }
+    options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:18}}, scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}, plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}} },
+    plugins:[stackTotalLabelPlugin]
   });
   new Chart(document.getElementById("gmvTrendChart"), {
     type:"bar",
     data:{ labels:months, datasets: SEGMENTS.slice(0,6).map((seg,i)=>({
       label:seg, data: MONTHLY_TRENDS.map(m=>Math.round((m.gmv[seg]||0)/1000)), backgroundColor: segColors[i], stack:"g"
     }))},
-    options:{ responsive:true, maintainAspectRatio:false, scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true, title:{display:true,text:"$K"}}}, plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}} }
+    options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:18}}, scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true, title:{display:true,text:"$K"}}}, plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}} },
+    plugins:[stackTotalLabelPlugin]
   });
   new Chart(document.getElementById("daysTrendChart"), {
     type:"line",
-    data:{ labels: DAYS_TREND_12MO.map(m=>m.month), datasets:[{label:"Avg days to complete", data: DAYS_TREND_12MO.map(m=>m.avgDays), borderColor:"#4f7cff", backgroundColor:"#4f7cff", tension:.3}]},
-    options:{ responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true}}, plugins:{legend:{display:false}} }
+    data:{ labels: DAYS_TREND_12MO.map(m=>m.month), datasets:[{label:"Avg days to complete", data: DAYS_TREND_12MO.map(m=>m.avgDays), borderColor:"#BB8139", backgroundColor:"#BB8139", tension:.3}]},
+    options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}}, scales:{y:{beginAtZero:true}}, plugins:{legend:{display:false}} },
+    plugins:[linePointLabelPlugin]
   });
 }
 function renderPhaseChart(){
@@ -887,7 +1079,7 @@ function renderPhaseChart(){
   new Chart(document.getElementById("phaseChart"), {
     type:"bar",
     data:{ labels:["Create → Scoping","Scoping → Service Menu Mapping","Service Menu Mapping → Complete"],
-      datasets:[{ data:[avg(p1),avg(p2),avg(p3)], backgroundColor:["#4f7cff","#d97706","#16a34a"], borderRadius:5 }] },
+      datasets:[{ data:[avg(p1),avg(p2),avg(p3)], backgroundColor:["#BB8139","#1E4E64","#71A5A1"], borderRadius:5 }] },
     options:{ indexAxis:"y", responsive:true, maintainAspectRatio:false, scales:{x:{beginAtZero:true,title:{display:true,text:"Days"}}}, plugins:{legend:{display:false}} }
   });
 }
@@ -906,12 +1098,12 @@ function populateFilterOptions(){
 function renderLegend(){
   const items = SEGMENTS.map(s=>`<span class="item">${segDot(s)}${s}</span>`).join("");
   document.getElementById("calLegend").innerHTML = items +
-    `<span class="item"><span class="sw" style="background:#f97316"></span>On Hold</span>` +
+    `<span class="item"><span class="sw" style="background:#BB8139"></span>On Hold</span>` +
     `<span class="item"><span class="badge badge-scrape" style="padding:1px 6px;">S</span> Has scraper (Notion)</span>`;
 }
 function cardStyleFor(t){
   const c = SEG_COLOR[t.segment] || SEG_COLOR["No Segment"];
-  return `background:${c.bg};color:${c.text};${t.onHold? "border:1.5px solid #f97316;" : ""}`;
+  return `background:${c.bg};color:${c.text};${t.onHold? "border:1.5px solid #BB8139;" : ""}`;
 }
 function renderCalendarHead(){
   const days = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
@@ -985,40 +1177,57 @@ document.getElementById("calToday").addEventListener("click", ()=>{ calYear=toda
 
 // ================= TRAVEL =================
 function renderTravel(){
-  const trips = TICKETS.filter(t=> (t.gmv>=100000 || !emrMigrated(t.emr)) && t.launch).sort((a,b)=>a.launch-b.launch);
+  const trips = TICKETS.filter(t=> travelRequired(t) && t.launch).sort((a,b)=>a.launch-b.launch);
   const byMonth = {};
   trips.forEach(t=>{ const k = t.launch.toLocaleDateString("en-US",{month:"long",year:"numeric"}); byMonth[k]=byMonth[k]||[]; byMonth[k].push(t); });
-  let html = `<div class="travel-row header"><div></div><div>Client</div><div>Location</div><div>Launch date</div><div>Requirement</div><div>Travel dates</div><div>MIC / PSM</div><div>Notes</div></div>`;
+  let html = `<div class="travel-row header"><div></div><div>Client</div><div>Location</div><div>Launch date</div><div>Requirement</div><div>Travel dates (manual)</div><div>MIC / PSM</div><div>Notes</div></div>`;
   Object.entries(byMonth).forEach(([month, items])=>{
     html += `<div class="travel-month"><h3>${month}</h3>`;
     items.forEach(t=>{
       const reasonTxt = t.gmv>=100000 ? "$100K+ GMV" : "EMR not yet migrated (" + emrConfidenceLabel(t.emr) + ")";
       const required = t.gmv>=100000 || !emrMigrated(t.emr);
-      const travelDatesTxt = t.travelDates ? `${fmt(t.travelDates.start)} – ${fmt(t.travelDates.end)}` : "Not set";
       html += `<div class="travel-row">
         ${avatarHtml(t.manager||t.ticketOwner)}
         <div><b>${t.client}</b><div class="si-sub" style="color:var(--sub);font-size:10.5px;">${reasonTxt}</div></div>
         <div style="font-size:11px;">${t.fullAddress}</div>
         <div>${fmt(t.launch)}</div>
         <div>${required? '<span class="badge badge-travel-req">Required</span>' : '<span class="badge badge-travel-des">Desired</span>'}</div>
-        <div style="font-size:11px;">${travelDatesTxt}</div>
+        <div class="travel-dates-cell">
+          <span class="lbl">Start</span>
+          <input type="date" value="${t.travelDates ? ymd(t.travelDates.start) : ''}" onchange="setTravelDate('${t.id}','start',this.value)">
+          <span class="lbl">End</span>
+          <input type="date" value="${t.travelDates ? ymd(t.travelDates.end) : ''}" onchange="setTravelDate('${t.id}','end',this.value)">
+        </div>
         <div style="font-size:11px;">${t.mic||"—"} / ${t.psmAttendee||"—"}</div>
-        <div><input type="text" placeholder="Add a note" value="" onchange="TICKETS.find(x=>x.id==='${t.id}')._travelNote=this.value"></div>
+        <div><input type="text" placeholder="Add a note" value="${t._travelNote||''}" onchange="TICKETS.find(x=>x.id==='${t.id}')._travelNote=this.value"></div>
       </div>`;
     });
     html += `</div>`;
   });
   document.getElementById("travelBody").innerHTML = html || `<div class="card">No travel-flagged migrations currently scheduled.</div>`;
 }
+window.setTravelDate = function(id, which, value){
+  const t = TICKETS.find(x=>x.id===id);
+  if (!t) return;
+  if (!t.travelDates) t.travelDates = {start:null, end:null};
+  t.travelDates[which] = parseYmd(value);
+  renderCapacity();
+};
 
 // ================= CAPACITY (Float-style timeline) =================
+function populateCapManagerFilter(){
+  const sel = document.getElementById("filterCapManager");
+  sel.innerHTML = `<option value="all">Manager: All</option>` + MANAGERS.map(m=>`<option value="${m.name}">${m.name}</option>`).join("");
+  sel.addEventListener("change", e=>{ capManagerFilter = e.target.value; renderCapacity(); });
+}
 function renderCapacity(){
   const weekLabels = [0,1,2,3,4,5].map(b=>{ const mon=mondayOf(today); mon.setDate(mon.getDate()+b*7); return weekLabel(mon); });
   document.getElementById("capTlHead").innerHTML = `<div>Manager</div>` + weekLabels.map(w=>`<div>${w}</div>`).join("");
   document.getElementById("capLegendTop").innerHTML = SEGMENTS.map(s=>`<span class="item">${segDot(s)}${s}</span>`).join("");
 
   const active = TICKETS.filter(t=>t.stage!=="Migration Complete" && t.stage!=="Closed - Churned/Canceled");
-  const rows = MANAGERS.map(m=>{
+  const mgrsToShow = capManagerFilter==="all" ? MANAGERS : MANAGERS.filter(m=>m.name===capManagerFilter);
+  const rows = mgrsToShow.map(m=>{
     const mine = active.filter(t=>t.manager===m.name && t.launch);
     let cells = "";
     for (let w=0; w<6; w++){
@@ -1034,7 +1243,7 @@ function renderCapacity(){
       cells += `<div class="cap-tl-cell">${total>0?`<div class="wk-total ${totCls}">${total.toFixed(0)}h</div>`:""}${bars}</div>`;
     }
     return `<div class="cap-tl-row">
-      <div class="cap-tl-mgr">${avatarHtml(m.name)}<div><div class="m-name">${m.name}</div><div class="m-sub">${mine.length} active · not-yet-migrated EMR ${mine.filter(t=>!emrMigrated(t.emr)).length}</div></div></div>
+      <div class="cap-tl-mgr" onclick="openManagerDetail('${m.name}')">${avatarHtml(m.name)}<div><div class="m-name">${m.name}</div><div class="m-sub">${mine.length} active · not-yet-migrated EMR ${mine.filter(t=>!emrMigrated(t.emr)).length}</div></div></div>
       ${cells}
     </div>`;
   }).join("");
@@ -1045,11 +1254,57 @@ function renderCapacity(){
     <tr><td>${t.client}</td><td>${segBadge(t.segment)}</td><td>${t.emr}</td><td>${t.complexity}</td><td>${fmt(t.launch)}</td></tr>
   `).join("") : `<tr><td colspan="5" style="color:var(--sub)">None — all Enterprise onboarding accounts have a manager assigned.</td></tr>`;
 }
+window.openManagerDetail = function(name){
+  const active = TICKETS.filter(t=>t.stage!=="Migration Complete" && t.stage!=="Closed - Churned/Canceled" && t.manager===name);
+  const totalGmv = active.reduce((s,t)=>s+t.gmv,0);
+  document.getElementById("ticketModal").innerHTML = `
+    <div class="modal-head">
+      <div><h2>${name}</h2><div style="font-size:11.5px;color:var(--sub);">${active.length} active migration(s) · $${(totalGmv/1000).toFixed(0)}K GMV</div></div>
+      <button class="close-x" onclick="closeTicket()">✕</button>
+    </div>
+    <table style="margin-top:10px;">
+      <thead><tr><th>Client</th><th>Segment</th><th>Complexity</th><th>GMV</th><th>EMR</th><th>EMR migrated?</th><th>Travel required?</th></tr></thead>
+      <tbody>
+        ${active.length ? active.map(t=>`
+          <tr class="clickable" onclick="openTicket('${t.id}')">
+            <td>${t.client}</td>
+            <td>${segBadge(t.segment)}</td>
+            <td>${t.complexity}</td>
+            <td>$${(t.gmv/1000).toFixed(0)}K</td>
+            <td>${t.emr}</td>
+            <td>${emrMigrated(t.emr) ? '<span class="badge badge-moved">Yes</span>' : '<span class="badge badge-pushed">No</span>'}</td>
+            <td>${travelRequired(t) ? '<span class="badge badge-travel-req">Required</span>' : '<span class="badge badge-travel-no">No</span>'}</td>
+          </tr>`).join("") : `<tr><td colspan="7" style="color:var(--sub)">No active migrations assigned.</td></tr>`}
+      </tbody>
+    </table>
+    <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+      <button class="btn-outline" onclick="closeTicket()">Close</button>
+    </div>
+  `;
+  document.getElementById("ticketModal").classList.add("wide");
+  document.getElementById("ticketOverlay").classList.add("active");
+};
 
 // ================= PIPELINE =================
+function populatePipelineManagerFilter(){
+  const sel = document.getElementById("pipelineManagerFilter");
+  sel.innerHTML = `<option value="all">Manager: All</option>` + MANAGERS.map(m=>`<option value="${m.name}">${m.name}</option>`).join("");
+  sel.addEventListener("change", e=>{ pipelineManagerFilter = e.target.value; renderBoard(); });
+  document.getElementById("pipelineSearch").addEventListener("input", e=>{ pipelineSearchQuery = e.target.value.trim().toLowerCase(); renderBoard(); });
+}
+function pipelineFilteredTickets(){
+  return TICKETS.filter(t=>{
+    if (pipelineManagerFilter !== "all" && t.manager !== pipelineManagerFilter) return false;
+    if (!pipelineSearchQuery) return true;
+    return t.client.toLowerCase().includes(pipelineSearchQuery) ||
+      t.medspaId.includes(pipelineSearchQuery) ||
+      t.segment.toLowerCase().includes(pipelineSearchQuery);
+  });
+}
 function renderBoard(){
+  const list = pipelineFilteredTickets();
   document.getElementById("board").innerHTML = STAGES.filter(s=>s!=="Closed - Churned/Canceled").map(stage=>{
-    const items = TICKETS.filter(t=>t.stage===stage);
+    const items = list.filter(t=>t.stage===stage);
     return `<div class="col">
       <div class="col-head"><span>${stage}</span><span>${items.length}</span></div>
       ${items.map(t=>`<div class="ticket-card" onclick="openTicket('${t.id}')">
@@ -1065,6 +1320,7 @@ window.openTicket = function(id){
   const t = TICKETS.find(x=>x.id===id);
   const stageIdx = STAGES.indexOf(t.stage);
   const tasks = TASK_TEMPLATE.map((tk,i)=>({...tk, status: i<stageIdx?"done": i===stageIdx?"progress":"todo"}));
+  document.getElementById("ticketModal").classList.remove("wide");
   document.getElementById("ticketModal").innerHTML = `
     <div class="modal-head">
       <div><h2>${t.client}</h2><div class="m-sub" style="font-size:11.5px;color:var(--sub);">${t.id} · Medspa #${t.medspaId} · ${t.stage}${t.onHold?' · <span class="badge badge-hold">On Hold</span>':''}</div></div>
@@ -1121,8 +1377,49 @@ function renderSettings(){
     </tr>`).join("");
 
   document.getElementById("emrTableBody").innerHTML = NOTION_EMR_TABLE.map(e=>`
-    <tr><td>${e.system}</td><td>${e.confidence==="Not Yet Migrated"? '<span style="color:var(--red)">Not Yet Migrated</span>' : e.confidence}</td><td>${e.scraper? '<span class="badge badge-scrape">Yes</span>' : 'No'}</td></tr>
-  `).join("") + `<tr><td style="color:var(--sub)">Any EMR not listed here</td><td style="color:var(--red)">Treated as Not Yet Migrated</td><td>No</td></tr>`;
+    <tr><td>${e.system}</td><td>${e.confidence==="Not Yet Migrated"? '<span style="color:var(--sunstone)">Not Yet Migrated</span>' : e.confidence}</td><td>${e.scraper? '<span class="badge badge-scrape">Yes</span>' : 'No'}</td></tr>
+  `).join("") + `<tr><td style="color:var(--sub)">Any EMR not listed here</td><td style="color:var(--sunstone)">Treated as Not Yet Migrated</td><td>No</td></tr>`;
+
+  renderCapacitySettingsUI();
+}
+function renderCapacitySettingsUI(){
+  document.getElementById("complexityRangeBody").innerHTML = CAPACITY_SETTINGS.complexityRanges.map((r,i)=>`
+    <tr><td>${r.min} – ${r.max >= 10 ? "10" : r.max}</td>
+    <td><input type="number" min="0" step="0.5" value="${r.hours}" onchange="updateComplexityHours(${i}, this.value)"></td></tr>
+  `).join("");
+
+  document.getElementById("emrMigratedHoursBody").innerHTML = `
+    <tr><td>Yes</td><td><input type="number" min="0" step="0.5" value="${CAPACITY_SETTINGS.emrMigratedHours.yes}" onchange="updateEmrMigratedHours('yes', this.value)"></td></tr>
+    <tr><td>No</td><td><input type="number" min="0" step="0.5" value="${CAPACITY_SETTINGS.emrMigratedHours.no}" onchange="updateEmrMigratedHours('no', this.value)"></td></tr>
+  `;
+
+  document.getElementById("segmentHoursBody").innerHTML = SEGMENTS.map(seg=>`
+    <tr><td>${segBadge(seg)}</td><td><input type="number" min="0" step="0.5" value="${CAPACITY_SETTINGS.segmentHours[seg]}" onchange="updateSegmentHours('${seg}', this.value)"></td></tr>
+  `).join("");
+
+  document.getElementById("travelExtraDaysInput").value = CAPACITY_SETTINGS.travelExtraDays;
+  document.getElementById("travelExtraDaysInput").onchange = function(){
+    CAPACITY_SETTINGS.travelExtraDays = Number(this.value) || 0;
+    renderCapacity();
+  };
+}
+window.updateComplexityHours = function(i, val){ CAPACITY_SETTINGS.complexityRanges[i].hours = Number(val) || 0; renderCapacity(); };
+window.updateEmrMigratedHours = function(key, val){ CAPACITY_SETTINGS.emrMigratedHours[key] = Number(val) || 0; renderCapacity(); };
+window.updateSegmentHours = function(seg, val){ CAPACITY_SETTINGS.segmentHours[seg] = Number(val) || 0; renderCapacity(); };
+
+function setupSettingsGate(){
+  document.getElementById("unlockSettingsBtn").addEventListener("click", tryUnlockSettings);
+}
+function tryUnlockSettings(){
+  const pw = prompt("Enter the Settings password:");
+  if (pw === null) return;
+  if (pw === SETTINGS_PASSWORD){
+    settingsUnlocked = true;
+    document.getElementById("settingsLocked").style.display = "none";
+    document.getElementById("settingsContent").style.display = "block";
+  } else {
+    alert("Incorrect password.");
+  }
 }
 
 // ================= TABS =================
@@ -1132,6 +1429,10 @@ document.querySelectorAll("nav.tabs button").forEach(btn=>{
     btn.classList.add("active");
     document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
     document.getElementById("panel-"+btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "settings" && !settingsUnlocked){
+      document.getElementById("settingsLocked").style.display = "block";
+      document.getElementById("settingsContent").style.display = "none";
+    }
   });
 });
 
@@ -1143,7 +1444,7 @@ document.getElementById("refreshBtn").addEventListener("click", ()=>{
 });
 document.getElementById("runAiBtn").addEventListener("click", ()=>{
   const code = prompt("Enter access code to run AI capacity model:");
-  if (code === "moxie2026") { alert("Capacity model recalculated using current tickets, EMR complexity, GMV, travel days, and launch-date proximity."); }
+  if (code === "moxie2026") { alert("Capacity model recalculated using current tickets, complexity ranges, segment hours, EMR migration history, and travel days from Settings."); }
   else if (code !== null) { alert("Incorrect code."); }
 });
 document.getElementById("addPersonBtn").addEventListener("click", ()=>{
@@ -1153,6 +1454,7 @@ document.getElementById("addPersonBtn").addEventListener("click", ()=>{
 // ================= INIT =================
 updateSyncLabel();
 renderKpis();
+renderPracticeSearch();
 renderWeeklyChart();
 renderSegmentChart();
 renderLaunchingThisMonth();
@@ -1168,8 +1470,11 @@ renderLegend();
 renderCalendarHead();
 renderCalendar();
 renderTravel();
+populateCapManagerFilter();
 renderCapacity();
+populatePipelineManagerFilter();
 renderBoard();
+setupSettingsGate();
 renderSettings();
 
 })();
