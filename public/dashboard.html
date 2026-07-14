@@ -317,10 +317,10 @@
   </div>
 
   <div class="card" style="margin-top:16px;">
-    <div class="section-title">Migrations launching this month</div>
-    <div class="section-sub">Click a row to expand full ticket detail and open it in HubSpot</div>
+    <div class="section-title">Migrations launching in the next 60 days</div>
+    <div class="section-sub">Sorted soonest to latest · click a row to expand full ticket detail and open it in HubSpot · completed migrations are listed separately below</div>
     <table>
-      <thead><tr><th></th><th>Client</th><th>Segment</th><th>Manager</th><th>Stage</th><th>Complexity</th><th>Launch date</th></tr></thead>
+      <thead><tr><th></th><th>Client</th><th>Segment</th><th>Manager</th><th>Stage</th><th>Complexity</th><th>Total GMV</th><th>Launch date</th><th>Change</th></tr></thead>
       <tbody id="launchingMonthBody"></tbody>
     </table>
   </div>
@@ -631,32 +631,20 @@ function avatarHtml(name){
 // EMR Confidence + Scraper table — mirrors the Notion "Known EMR Systems & Nuances"
 // tracker (System / Confidence Level / Has Scraper columns). Any EMR NOT in this list
 // is treated as not-yet-migrated per your rule ("if not on the list at all, that's also
-// Confidence Level: not yet migrated").
-const NOTION_EMR_TABLE = [
-  {system:"Aesthetic Record", confidence:"Fully Confident", scraper:true},
-  {system:"Aesthetics Pro", confidence:"Fully Confident", scraper:true},
-  {system:"BLVD", confidence:"Fully Confident", scraper:true},
-  {system:"Booker", confidence:"Fully Confident", scraper:false},
-  {system:"Vagaro", confidence:"Fully Confident", scraper:true},
-  {system:"Mindbody", confidence:"Fully Confident", scraper:false},
-  {system:"Square", confidence:"Fully Confident", scraper:false},
-  {system:"Acuity", confidence:"Not Yet Migrated", scraper:false},
-  {system:"Jane", confidence:"Fully Confident", scraper:false},
-];
+// Confidence Level: not yet migrated"). Populated at runtime from /api/dashboard/data
+// (real Notion data via Firestore) -- see loadRealData() near the bottom of this file.
+let NOTION_EMR_TABLE = [];
 function notionRow(emr){ return NOTION_EMR_TABLE.find(r=>r.system===emr); }
 function emrMigrated(emr){ const row = notionRow(emr); if (!row) return false; return row.confidence !== "Not Yet Migrated"; }
 function emrScraper(emr){ const row = notionRow(emr); return row ? row.scraper : false; }
 function emrConfidenceLabel(emr){ const row = notionRow(emr); return row ? row.confidence : "Not on Notion list — treated as Not Yet Migrated"; }
 
-const MANAGERS = [
-  {name:"Jordan Blake", email:"jordan.blake@joinmoxie.com", calStatus:"connected"},
-  {name:"Priya Anand", email:"priya.anand@joinmoxie.com", calStatus:"connected"},
-  {name:"Mary Ann Constante", email:"maryann.constante@joinmoxie.com", calStatus:"connected"},
-  {name:"Nico Duran", email:"nico.duran@joinmoxie.com", calStatus:"pending"},
-  {name:"Benedetto Palang", email:"benedetto.palang@joinmoxie.com", calStatus:"none"},
-];
+// Populated at runtime from /api/dashboard/data, derived from each company's
+// migrations_manager field in HubSpot (see api/dashboard/data.js) -- Calendar
+// connection status isn't tracked yet so calStatus always starts as "none".
+let MANAGERS = [];
 
-const today = new Date(2026, 6, 10); // Jul 10, 2026
+const today = new Date(); // real current date -- now that data is live, no more fixed demo date
 function dt(y,m,day){ return new Date(y,m,day); }
 function fmt(d){ return d ? d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "—"; }
 function ymd(d){ return d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}` : ""; }
@@ -664,39 +652,11 @@ function parseYmd(s){ if(!s) return null; const [y,m,d]=s.split("-").map(Number)
 function daysBetween(a,b){ if(!a||!b) return null; return Math.round((b-a)/86400000); }
 function hsUrl(hsId){ return `https://app.hubspot.com/contacts/22420370/record/0-5/${hsId}`; }
 
-// ================= TICKETS (sample data) =================
-// hsId = fabricated HubSpot record id, used only to build the "Open in HubSpot" link.
-const TICKETS = [
-  {id:"MX-1903", hsId:"44938471903", client:"Brown Suede Spa", medspaId:"1903", fullAddress:"1902 Airport Rd, Portland, OR 97218", segment:"Enterprise", emr:"Nextech", gmv:210000, complexity:7.8, manager:"Jordan Blake", ticketOwner:"Benedetto Palang", psm:"Leslie Nichols", stage:"Migration Prep & Testing", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,8), prevLaunch:dt(2026,6,8), changeLoggedDate:null, createDate:dt(2026,4,20), scopingDate:dt(2026,4,28), serviceMenuDate:dt(2026,5,15), completeDate:null, migrationNotes:"Client requested weekend support coverage.", notes:["Prep environment built, QA scheduled for 7/6."], mic:"Jordan Blake", psmAttendee:"Leslie Nichols", travelDates:{start:dt(2026,6,6),end:dt(2026,6,9)}},
-  {id:"MX-2119", hsId:"44938472119", client:"Meagan Reynolds Aesthetics", medspaId:"2119", fullAddress:"88 Congress St, Boston, MA 02110", segment:"Silver", emr:"Vagaro", gmv:58000, complexity:4.2, manager:"Priya Anand", ticketOwner:"Nico Duran", psm:"Amira Aldewick", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,14), prevLaunch:dt(2026,6,14), changeLoggedDate:null, createDate:dt(2026,5,10), scopingDate:dt(2026,5,20), serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-2204", hsId:"44938479006", client:"Ayla Aesthetics", medspaId:"2204", fullAddress:"501 E Boston Post Rd, Mamaroneck, NY 10543", segment:"Enterprise", emr:"BLVD", gmv:184000, complexity:6.5, manager:"Jordan Blake", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,7,4), prevLaunch:dt(2026,6,28), changeLoggedDate:dt(2026,6,6), createDate:dt(2026,5,1), scopingDate:dt(2026,5,15), serviceMenuDate:null, completeDate:null, migrationNotes:"Provider-specific pricing confirmed; service menu build must account for provider-level pricing.", notes:["Discovery call completed — scraper request submitted (Linear PMA-1084)."], mic:"Jordan Blake", psmAttendee:"Amira Aldewick", travelDates:{start:dt(2026,8,2),end:dt(2026,8,5)}},
-  {id:"MX-2189", hsId:"44938472189", client:"VivanaMD Medical Spa and Wellness Clinic", medspaId:"2189", fullAddress:"1812 Airport Rd Unit 4, Nashville, TN 37206", segment:"Enterprise", emr:"Dr. Chrono", gmv:96000, complexity:9.1, manager:null, ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,28), prevLaunch:dt(2026,6,28), changeLoggedDate:null, createDate:dt(2026,5,25), scopingDate:dt(2026,6,3), serviceMenuDate:null, completeDate:null, migrationNotes:"MIGRATION INTAKE SUMMARY — Vivana MD (VMD). Risk level HIGH. Primary EMR DrChrono not yet migrated; additional EMR Booker unknown/unassessed. Estimated patient count 1400.", notes:[], mic:null, psmAttendee:null, travelDates:{start:dt(2026,6,26),end:dt(2026,6,29)}},
-  {id:"MX-2210", hsId:"44938472210", client:"Elissa Sy", medspaId:"2210", fullAddress:"77 Ponce De Leon Blvd, Coral Gables, FL 33134", segment:"Growth", emr:"Aesthetic Record", gmv:26000, complexity:2.6, manager:"Nico Duran", ticketOwner:"Nico Duran", psm:"Leslie Nichols", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,7,10), prevLaunch:dt(2026,7,10), changeLoggedDate:null, createDate:dt(2026,6,1), scopingDate:dt(2026,6,8), serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1980", hsId:"44938471980", client:"Refined Wellness", medspaId:"1980", fullAddress:"200 Boylston St, Chestnut Hill, MA 02467", segment:"No Segment", emr:"Booker", gmv:12000, complexity:1.2, manager:null, ticketOwner:"Nico Duran", psm:"Leslie Nichols", stage:"Migration Scoping", lifecycleStage:"Pre-Launch", onHold:false, launch:null, prevLaunch:null, changeLoggedDate:null, createDate:dt(2026,6,20), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1801", hsId:"44938471801", client:"Avalon Laser Inc", medspaId:"1801", fullAddress:"4400 Bellaire Blvd, Houston, TX 77025", segment:"Silver", emr:"Vagaro", gmv:31000, complexity:3.0, manager:"Benedetto Palang", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:true, launch:dt(2025,9,1), prevLaunch:dt(2025,9,1), changeLoggedDate:null, createDate:dt(2025,7,1), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"On hold — client paused onboarding.", notes:["On hold — client paused onboarding."], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1771", hsId:"44938471771", client:"Eleve Esthetics", medspaId:"1771", fullAddress:"90 Central St, Wellesley, MA 02481", segment:"Growth", emr:"Aesthetic Record", gmv:19000, complexity:2.1, manager:"Mary Ann Constante", ticketOwner:"Mary Ann Constante", psm:"Leslie Nichols", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:true, launch:dt(2025,9,13), prevLaunch:dt(2025,9,13), changeLoggedDate:null, createDate:dt(2025,7,15), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1899", hsId:"44938471899", client:"HIVE Wellness & Aesthetic Boutique", medspaId:"1899", fullAddress:"55 Newbury St, Boston, MA 02116", segment:"Experienced", emr:"BLVD", gmv:44000, complexity:3.3, manager:"Priya Anand", ticketOwner:"Priya Anand", psm:"Leslie Nichols", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:true, launch:dt(2026,2,2), prevLaunch:dt(2026,2,2), changeLoggedDate:null, createDate:dt(2025,12,1), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-2301", hsId:"44938472301", client:"Freedom Wellness and Aesthetics", medspaId:"2301", fullAddress:"33 Arch St, Boston, MA 02110", segment:"Growth", emr:"Aesthetic Record", gmv:28000, complexity:2.4, manager:"Mary Ann Constante", ticketOwner:"Mary Ann Constante", psm:"Leslie Nichols", stage:"File Migration Execution", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,7,27), prevLaunch:dt(2026,7,27), changeLoggedDate:null, createDate:dt(2026,5,20), scopingDate:dt(2026,5,28), serviceMenuDate:dt(2026,6,10), completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-2303", hsId:"44938472303", client:"Barbarino Surgical Arts (Texas)", medspaId:"2303", fullAddress:"5959 West Loop S, Bellaire, TX 77401", segment:"Enterprise", emr:"Nextech", gmv:132000, complexity:6.8, manager:"Benedetto Palang", ticketOwner:"Benedetto Palang", psm:"Leslie Nichols", stage:"Migration Scoping", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,8,4), prevLaunch:dt(2026,8,4), changeLoggedDate:null, createDate:dt(2026,6,15), scopingDate:dt(2026,6,25), serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:"Benedetto Palang", psmAttendee:"Leslie Nichols", travelDates:{start:dt(2026,9,1),end:dt(2026,9,4)}},
-  {id:"MX-2304", hsId:"44938472304", client:"Barbarino Surgical Arts", medspaId:"2304", fullAddress:"5959 West Loop S, Bellaire, TX 77401", segment:"Enterprise", emr:"Nextech", gmv:118000, complexity:6.4, manager:"Benedetto Palang", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Internal Quality Review", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,8,4), prevLaunch:dt(2026,8,4), changeLoggedDate:null, createDate:dt(2026,6,10), scopingDate:dt(2026,6,18), serviceMenuDate:dt(2026,6,29), completeDate:null, migrationNotes:"", notes:[], mic:"Benedetto Palang", psmAttendee:"Amira Aldewick", travelDates:{start:dt(2026,9,1),end:dt(2026,9,4)}},
-  {id:"MX-1855", hsId:"44938471855", client:"Med Aesthetics", medspaId:"1855", fullAddress:"400 Perimeter Center Ter, Atlanta, GA 30346", segment:"Growth", emr:"Vagaro", gmv:24000, complexity:2.0, manager:"Mary Ann Constante", ticketOwner:"Mary Ann Constante", psm:"Leslie Nichols", stage:"Migration Requested", lifecycleStage:"Pre-Launch", onHold:false, launch:dt(2026,8,6), prevLaunch:dt(2026,8,6), changeLoggedDate:null, createDate:dt(2026,7,1), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-2123", hsId:"44938472123", client:"Icon Anti-Aging & Aesthetics Rochester", medspaId:"2123", fullAddress:"850 Linden Ave, Rochester, MI 48307", segment:"Enterprise", emr:"PatientNow", gmv:101000, complexity:6.1, manager:null, ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Requested", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,8,15), prevLaunch:dt(2026,8,15), changeLoggedDate:null, createDate:dt(2026,6,29), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:{start:dt(2026,9,13),end:dt(2026,9,16)}},
-  {id:"MX-2190b", hsId:"44938472191", client:"Kelly Pfeiffer", medspaId:"2191", fullAddress:"11500 W Olympic Blvd, Los Angeles, CA 90064", segment:"Experienced", emr:"Aesthetic Record", gmv:41000, complexity:2.7, manager:"Priya Anand", ticketOwner:"Benedetto Palang", psm:"Leslie Nichols", stage:"Client Migration Execution", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,8,1), prevLaunch:dt(2026,8,1), changeLoggedDate:null, createDate:dt(2026,6,5), scopingDate:dt(2026,6,12), serviceMenuDate:dt(2026,6,24), completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1490", hsId:"44938471490", client:"Vivid Injectables", medspaId:"1490", fullAddress:"2701 Ocean Park Blvd, Santa Monica, CA 90405", segment:"Growth", emr:"Dr. Chrono", gmv:31000, complexity:5.1, manager:"Jordan Blake", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Prep & Testing", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,14), prevLaunch:dt(2026,6,8), changeLoggedDate:dt(2026,6,29), createDate:dt(2026,5,1), scopingDate:dt(2026,5,10), serviceMenuDate:dt(2026,5,22), completeDate:null, migrationNotes:"", notes:["Pushed back 6 days — client requested extra week for staff training."], mic:null, psmAttendee:null, travelDates:{start:dt(2026,6,12),end:dt(2026,6,15)}},
-  {id:"MX-1799", hsId:"44938471799", client:"Radiant Row Med Spa", medspaId:"1799", fullAddress:"920 Peachtree St NE, Atlanta, GA 30309", segment:"Silver", emr:"Booker", gmv:39000, complexity:4.0, manager:"Nico Duran", ticketOwner:"Nico Duran", psm:"Amira Aldewick", stage:"Reworking", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,7,25), prevLaunch:dt(2026,7,18), changeLoggedDate:dt(2026,7,2), createDate:dt(2026,5,20), scopingDate:dt(2026,5,29), serviceMenuDate:dt(2026,6,12), completeDate:null, migrationNotes:"QA found duplicate appointment records — reworking client migration step.", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1602", hsId:"44938471602", client:"Sunset Med Aesthetics", medspaId:"1602", fullAddress:"1234 Ocean Ave, San Diego, CA 92109", segment:"Beginner", emr:"Square", gmv:15000, complexity:1.4, manager:"Nico Duran", ticketOwner:"Nico Duran", psm:"Leslie Nichols", stage:"Closed - Churned/Canceled", lifecycleStage:"Onboarding", onHold:false, launch:null, prevLaunch:null, changeLoggedDate:null, createDate:dt(2026,3,1), scopingDate:dt(2026,3,10), serviceMenuDate:null, completeDate:null, migrationNotes:"Client canceled onboarding before launch.", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1533", hsId:"44938471533", client:"GlowLab Aesthetics", medspaId:"1533", fullAddress:"600 W Fulton St, Chicago, IL 60661", segment:"Silver", emr:"Vagaro", gmv:48000, complexity:2.8, manager:"Priya Anand", ticketOwner:"Priya Anand", psm:"Amira Aldewick", stage:"Closed - Churned/Canceled", lifecycleStage:"Onboarding", onHold:false, launch:null, prevLaunch:null, changeLoggedDate:null, createDate:dt(2026,2,15), scopingDate:null, serviceMenuDate:null, completeDate:null, migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-
-  // ----- COMPLETED (feed 30/60-day counts + phase durations + manager outliers) -----
-  {id:"MX-1401", hsId:"44938471401", client:"Bloom Dermatology", medspaId:"1401", fullAddress:"18 Tremont St, Boston, MA 02108", segment:"Silver", emr:"Aesthetic Record", gmv:61000, complexity:3.4, manager:"Priya Anand", ticketOwner:"Priya Anand", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,5), prevLaunch:dt(2026,6,5), changeLoggedDate:null, createDate:dt(2026,4,1), scopingDate:dt(2026,4,9), serviceMenuDate:dt(2026,4,22), completeDate:dt(2026,6,5), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1402", hsId:"44938471402", client:"Halcyon Aesthetics", medspaId:"1402", fullAddress:"70 Linden St, Wellesley, MA 02481", segment:"Growth", emr:"Vagaro", gmv:19000, complexity:1.5, manager:"Nico Duran", ticketOwner:"Nico Duran", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,5,20), prevLaunch:dt(2026,5,20), changeLoggedDate:null, createDate:dt(2026,3,25), scopingDate:dt(2026,4,2), serviceMenuDate:dt(2026,4,14), completeDate:dt(2026,5,20), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1403", hsId:"44938471403", client:"Lotus Med Spa", medspaId:"1403", fullAddress:"400 5th Ave, New York, NY 10018", segment:"Gold", emr:"BLVD", gmv:78000, complexity:4.6, manager:"Jordan Blake", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,1), prevLaunch:dt(2026,6,1), changeLoggedDate:null, createDate:dt(2026,4,10), scopingDate:dt(2026,4,20), serviceMenuDate:dt(2026,5,4), completeDate:dt(2026,6,1), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1404", hsId:"44938471404", client:"Rivera Skin Studio", medspaId:"1404", fullAddress:"200 SW Market St, Portland, OR 97201", segment:"Silver", emr:"Vagaro", gmv:52000, complexity:3.1, manager:"Mary Ann Constante", ticketOwner:"Mary Ann Constante", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,4,15), prevLaunch:dt(2026,4,15), changeLoggedDate:null, createDate:dt(2026,1,20), scopingDate:dt(2026,1,30), serviceMenuDate:dt(2026,2,20), completeDate:dt(2026,4,15), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1405", hsId:"44938471405", client:"Elevate Skin Studio", medspaId:"1405", fullAddress:"3200 N Lamar Blvd, Austin, TX 78705", segment:"Growth", emr:"BLVD", gmv:22000, complexity:1.9, manager:"Nico Duran", ticketOwner:"Nico Duran", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,3,10), prevLaunch:dt(2026,3,10), changeLoggedDate:null, createDate:dt(2026,0,15), scopingDate:dt(2026,0,25), serviceMenuDate:dt(2026,1,15), completeDate:dt(2026,3,10), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1406", hsId:"44938471406", client:"Willow & Vine Med Spa", medspaId:"1406", fullAddress:"1 Beacon St, Boston, MA 02108", segment:"Enterprise", emr:"Nextech", gmv:142000, complexity:8.2, manager:"Jordan Blake", ticketOwner:"Priya Anand", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,2,20), prevLaunch:dt(2026,2,20), changeLoggedDate:null, createDate:dt(2025,10,15), scopingDate:dt(2025,10,29), serviceMenuDate:dt(2025,11,20), completeDate:dt(2026,2,20), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1407", hsId:"44938471407", client:"Radiance MedSpa Group", medspaId:"1407", fullAddress:"3500 Peachtree Rd NE, Atlanta, GA 30326", segment:"Enterprise", emr:"Dr. Chrono", gmv:265000, complexity:9.6, manager:"Benedetto Palang", ticketOwner:"Benedetto Palang", psm:"Amira Aldewick", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,1,25), prevLaunch:dt(2026,1,25), changeLoggedDate:null, createDate:dt(2025,9,1), scopingDate:dt(2025,9,20), serviceMenuDate:dt(2025,10,25), completeDate:dt(2026,1,25), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-  {id:"MX-1408", hsId:"44938471408", client:"Vivid Aesthetic Bar", medspaId:"1408", fullAddress:"2100 Bryan St, Dallas, TX 75201", segment:"Gold", emr:"BLVD", gmv:66000, complexity:3.9, manager:"Priya Anand", ticketOwner:"Priya Anand", psm:"Leslie Nichols", stage:"Migration Complete", lifecycleStage:"Onboarding", onHold:false, launch:dt(2026,6,28), prevLaunch:dt(2026,6,28), changeLoggedDate:null, createDate:dt(2026,5,5), scopingDate:dt(2026,5,13), serviceMenuDate:dt(2026,5,26), completeDate:dt(2026,6,28), migrationNotes:"", notes:[], mic:null, psmAttendee:null, travelDates:null},
-];
+// ================= TICKETS =================
+// Populated at runtime from /api/dashboard/data (real HubSpot data via Firestore) --
+// see loadRealData() near the bottom of this script. Starts empty so the dashboard
+// shows a clear "no data yet" state instead of sample rows if a sync hasn't run.
+let TICKETS = [];
 
 const TASK_TEMPLATE = [
   {name:"Kick-off call"},
@@ -708,23 +668,56 @@ const TASK_TEMPLATE = [
   {name:"Launch"},
 ];
 
-// Illustrative aggregate trend data (independent of the individual TICKETS sample above,
-// so the trend charts have a clean multi-month shape to review) — swap for real
-// Firestore-aggregated queries once HubSpot sync is live.
-const MONTHLY_TRENDS = [
-  {month:"Feb", volume:{Enterprise:2,Gold:1,Silver:3,Experienced:1,Growth:2,Beginner:1}, gmv:{Enterprise:180000,Gold:60000,Silver:90000,Experienced:35000,Growth:40000,Beginner:12000}, avgDays:58},
-  {month:"Mar", volume:{Enterprise:1,Gold:2,Silver:2,Experienced:2,Growth:3,Beginner:1}, gmv:{Enterprise:120000,Gold:95000,Silver:70000,Experienced:55000,Growth:55000,Beginner:10000}, avgDays:55},
-  {month:"Apr", volume:{Enterprise:2,Gold:2,Silver:3,Experienced:1,Growth:2,Beginner:2}, gmv:{Enterprise:210000,Gold:100000,Silver:100000,Experienced:30000,Growth:38000,Beginner:18000}, avgDays:52},
-  {month:"May", volume:{Enterprise:3,Gold:1,Silver:2,Experienced:2,Growth:4,Beginner:1}, gmv:{Enterprise:300000,Gold:55000,Silver:80000,Experienced:60000,Growth:70000,Beginner:9000}, avgDays:49},
-  {month:"Jun", volume:{Enterprise:2,Gold:3,Silver:3,Experienced:2,Growth:3,Beginner:2}, gmv:{Enterprise:230000,Gold:145000,Silver:110000,Experienced:58000,Growth:52000,Beginner:16000}, avgDays:45},
-  {month:"Jul", volume:{Enterprise:3,Gold:2,Silver:2,Experienced:1,Growth:2,Beginner:1}, gmv:{Enterprise:340000,Gold:80000,Silver:75000,Experienced:28000,Growth:35000,Beginner:11000}, avgDays:43},
-];
-const DAYS_TREND_12MO = [
-  {month:"Aug '25", avgDays:66}, {month:"Sep '25", avgDays:63}, {month:"Oct '25", avgDays:61},
-  {month:"Nov '25", avgDays:60}, {month:"Dec '25", avgDays:57}, {month:"Jan '26", avgDays:58},
-  {month:"Feb '26", avgDays:58}, {month:"Mar '26", avgDays:55}, {month:"Apr '26", avgDays:52},
-  {month:"May '26", avgDays:49}, {month:"Jun '26", avgDays:45}, {month:"Jul '26", avgDays:43},
-];
+// Aggregate trend data, computed from real TICKETS once loaded -- see
+// computeMonthlyTrends()/computeDaysTrend12Mo() near the bottom of this file, called
+// from loadRealData() after the fetch resolves. Empty until then.
+let MONTHLY_TRENDS = [];
+let DAYS_TREND_12MO = [];
+
+const SEGMENT_KEYS = ["Enterprise","Gold","Silver","Experienced","Growth","Beginner"];
+function monthKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; }
+function monthLabelShort(d){ return d.toLocaleDateString("en-US",{month:"short"}); }
+function monthLabelWithYear(d){ return `${d.toLocaleDateString("en-US",{month:"short"})} '${String(d.getFullYear()).slice(2)}`; }
+
+// Volume/GMV/avg-days per month, using each ticket's launch date as the month it
+// counts toward — last 6 calendar months through the current month.
+function computeMonthlyTrends(tickets){
+  const months = [];
+  for (let i = 5; i >= 0; i--){
+    months.push(new Date(today.getFullYear(), today.getMonth()-i, 1));
+  }
+  return months.map(monthStart => {
+    const key = monthKey(monthStart);
+    const inMonth = tickets.filter(t => t.launch && monthKey(t.launch) === key);
+    const volume = {}, gmv = {};
+    SEGMENT_KEYS.forEach(seg => { volume[seg]=0; gmv[seg]=0; });
+    inMonth.forEach(t => {
+      const seg = SEGMENT_KEYS.includes(t.segment) ? t.segment : null;
+      if (seg){ volume[seg] = (volume[seg]||0)+1; gmv[seg] = (gmv[seg]||0)+(t.gmv||0); }
+    });
+    const completedInMonth = tickets.filter(t => t.completeDate && monthKey(t.completeDate) === key && t.createDate);
+    const avgDays = completedInMonth.length
+      ? Math.round(completedInMonth.reduce((sum,t)=>sum+daysBetween(t.createDate,t.completeDate),0)/completedInMonth.length)
+      : 0;
+    return { month: monthLabelShort(monthStart), volume, gmv, avgDays };
+  });
+}
+
+// Trailing 12-month avg-days-to-complete trend, independent of the 6-month volume view.
+function computeDaysTrend12Mo(tickets){
+  const months = [];
+  for (let i = 11; i >= 0; i--){
+    months.push(new Date(today.getFullYear(), today.getMonth()-i, 1));
+  }
+  return months.map(monthStart => {
+    const key = monthKey(monthStart);
+    const completedInMonth = tickets.filter(t => t.completeDate && monthKey(t.completeDate) === key && t.createDate);
+    const avgDays = completedInMonth.length
+      ? Math.round(completedInMonth.reduce((sum,t)=>sum+daysBetween(t.createDate,t.completeDate),0)/completedInMonth.length)
+      : 0;
+    return { month: monthLabelWithYear(monthStart), avgDays };
+  });
+}
 
 // ================= CAPACITY SETTINGS (editable in Settings tab) =================
 const CAPACITY_SETTINGS = {
@@ -830,6 +823,50 @@ const linePointLabelPlugin = {
     ctx.restore();
   }
 };
+// Draws the value above each bar, for bar-type datasets only (so a combo chart's
+// line dataset -- e.g. weeklyChart's "Avg complexity" line -- doesn't get labeled
+// twice or thrown off by this).
+const barValueLabelPlugin = {
+  id: "barValueLabel",
+  afterDatasetsDraw(chart){
+    const {ctx} = chart;
+    ctx.save();
+    ctx.font = "700 10.5px -apple-system, sans-serif";
+    ctx.fillStyle = "#282623";
+    ctx.textAlign = "center";
+    chart.data.datasets.forEach((ds, dsIndex) => {
+      const meta = chart.getDatasetMeta(dsIndex);
+      if (meta.hidden || meta.type !== "bar") return;
+      meta.data.forEach((el, i) => {
+        const v = ds.data[i];
+        if (v === undefined || v === null || v === 0) return;
+        ctx.fillText(String(v), el.x, el.y - 6);
+      });
+    });
+    ctx.restore();
+  }
+};
+// Draws the value centered on each pie/doughnut slice.
+const pieValueLabelPlugin = {
+  id: "pieValueLabel",
+  afterDatasetsDraw(chart){
+    const {ctx} = chart;
+    const meta = chart.getDatasetMeta(0);
+    if (!meta) return;
+    ctx.save();
+    ctx.font = "700 11px -apple-system, sans-serif";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    meta.data.forEach((el, i) => {
+      const v = chart.data.datasets[0].data[i];
+      if (!v) return;
+      const pos = el.tooltipPosition();
+      ctx.fillText(String(v), pos.x, pos.y);
+    });
+    ctx.restore();
+  }
+};
 
 // ================= STATE =================
 let calYear = today.getFullYear(), calMonth = today.getMonth();
@@ -858,9 +895,11 @@ function renderKpis(){
   const unknownLaunch = TICKETS.filter(t => activeTickets(t) && !t.launch);
   const pushed = TICKETS.filter(t=> t.launch && t.prevLaunch && +t.launch > +t.prevLaunch).length;
   const movedUp = TICKETS.filter(t=> t.launch && t.prevLaunch && +t.launch < +t.prevLaunch).length;
-  const totalGmv = TICKETS.filter(activeTickets).reduce((s,t)=>s+t.gmv,0);
-  const byEnterprise = TICKETS.filter(t=>t.segment==="Enterprise" && activeTickets(t)).length;
-  const unassignedEnt = TICKETS.filter(t=>!t.manager && t.segment==="Enterprise" && activeTickets(t)).length;
+  const thisMonth = t => t.launch && t.launch.getMonth()===today.getMonth() && t.launch.getFullYear()===today.getFullYear();
+  const gmvThisMonth = TICKETS.filter(t=>activeTickets(t) && thisMonth(t));
+  const totalGmv = gmvThisMonth.reduce((s,t)=>s+t.gmv,0);
+  const enterpriseThisMonth = TICKETS.filter(t=>t.segment==="Enterprise" && activeTickets(t) && thisMonth(t));
+  const unassigned = TICKETS.filter(t=>!t.manager && activeTickets(t));
 
   const gmvOf = arr => "$"+(arr.reduce((s,t)=>s+t.gmv,0)/1000).toFixed(0)+"K GMV";
 
@@ -869,23 +908,57 @@ function renderKpis(){
     {label:"Launching Next 14 Days", value:next14.length, delta:gmvOf(next14), cls:"flat"},
     {label:"Launching Next 30 Days", value:next30.length, delta:gmvOf(next30), cls:"flat"},
     {label:"Unknown Launch Date", value:unknownLaunch.length, delta:"no target set", cls:"up"},
-    {label:"Total GMV to Launch", value:"$"+(totalGmv/1000).toFixed(0)+"K", delta:"open pipeline", cls:"flat"},
+    {label:"Total GMV to Launch (This Month)", value:"$"+(totalGmv/1000).toFixed(0)+"K", delta:"launching this calendar month", cls:"flat"},
     {label:"Launch Date Changes (30d)", value:pushed+movedUp, delta:`${pushed} pushed back, ${movedUp} moved up`, cls:"up"},
-    {label:"Enterprise Launches", value:byEnterprise, delta:"priority tier", cls:"flat"},
-    {label:"Unassigned Enterprise", value:unassignedEnt, delta:"needs manager", cls:"up"},
+    {label:"Enterprise Launches (This Month)", value:enterpriseThisMonth.length, delta:"priority tier", cls:"flat"},
+    {label:"Unassigned Migrations", value:unassigned.length, delta:"needs manager · click to view", cls:"up", onClick:"openUnassignedModal()"},
   ];
   document.getElementById("kpiGrid").innerHTML = kpis.map(k=>`
     <div class="card kpi">
-      <div class="label">${k.label}</div>
+      <div class="label"${k.onClick?` style="cursor:pointer;text-decoration:underline;text-underline-offset:2px;" onclick="${k.onClick}"`:""}>${k.label}</div>
       <div class="value">${k.value}</div>
       <div class="delta ${k.cls}">${k.delta}</div>
     </div>`).join("");
 }
+window.openUnassignedModal = function(){
+  const active = t => t.stage!=="Migration Complete" && t.stage!=="Closed - Churned/Canceled";
+  const unassigned = TICKETS.filter(t=>!t.manager && active(t));
+  openBucketModal("Unassigned Migrations — All Segments", unassigned);
+};
+// Generic modal for "click a chart/KPI, see the providers behind it" -- every row
+// opens the full ticket detail (openTicket), which includes the real HubSpot link.
+window.openBucketModal = function(title, tickets){
+  const totalGmv = tickets.reduce((s,t)=>s+t.gmv,0);
+  document.getElementById("ticketModal").innerHTML = `
+    <div class="modal-head">
+      <div><h2>${title}</h2><div style="font-size:11.5px;color:var(--sub);">${tickets.length} migration(s) · $${(totalGmv/1000).toFixed(0)}K GMV</div></div>
+      <button class="close-x" onclick="closeTicket()">✕</button>
+    </div>
+    <table style="margin-top:10px;">
+      <thead><tr><th>Client</th><th>Segment</th><th>Manager</th><th>Stage</th><th>GMV</th><th>Launch date</th></tr></thead>
+      <tbody>
+        ${tickets.length ? tickets.slice().sort((a,b)=>(a.launch&&b.launch)?a.launch-b.launch:(a.launch?-1:1)).map(t=>`
+          <tr class="clickable" onclick="openTicket('${t.id}')">
+            <td>${t.client}</td>
+            <td>${segBadge(t.segment)}</td>
+            <td>${t.manager||"Unassigned"}</td>
+            <td>${t.stage}</td>
+            <td>$${(t.gmv/1000).toFixed(0)}K</td>
+            <td>${fmt(t.launch)}</td>
+          </tr>`).join("") : `<tr><td colspan="6" style="color:var(--sub)">No migrations.</td></tr>`}
+      </tbody>
+    </table>
+    <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+      <button class="btn-outline" onclick="closeTicket()">Close</button>
+    </div>`;
+  document.getElementById("ticketModal").classList.add("wide");
+  document.getElementById("ticketOverlay").classList.add("active");
+};
 function renderPracticeSearch(){
   const input = document.getElementById("practiceSearch");
   const wrap = document.getElementById("practiceSearchResults");
   const body = document.getElementById("practiceSearchBody");
-  input.addEventListener("input", ()=>{
+  input.oninput = ()=>{
     const q = input.value.trim().toLowerCase();
     if (!q){ wrap.style.display = "none"; return; }
     const matches = TICKETS.filter(t => t.client.toLowerCase().includes(q) || t.medspaId.includes(q));
@@ -893,21 +966,31 @@ function renderPracticeSearch(){
     body.innerHTML = matches.length ? matches.map(t=>`
       <tr class="clickable" onclick="openTicket('${t.id}')"><td>${t.client}</td><td>${segBadge(t.segment)}</td><td>${t.manager||"Unassigned"}</td><td>${t.stage}</td><td>${fmt(t.launch)}</td></tr>
     `).join("") : `<tr><td colspan="5" style="color:var(--sub)">No matching practices.</td></tr>`;
-  });
+  };
+}
+// Chart.js throws "Canvas is already in use" if you create a second chart on the
+// same <canvas> without destroying the first -- needed now that "Refresh" re-runs
+// renderAll() (and therefore every render*Chart() function) on the same page load.
+function destroyChart(canvasId){
+  const existing = Chart.getChart(canvasId);
+  if (existing) existing.destroy();
 }
 function renderWeeklyChart(){
   const buckets = [0,1,2,3,4,5];
   const labels = buckets.map(b=>{ const mon=mondayOf(today); mon.setDate(mon.getDate()+b*7); return weekLabel(mon) + (b===5? "+":""); });
   const counts = new Array(6).fill(0);
   const compSums = new Array(6).fill(0);
+  const bucketTickets = [[],[],[],[],[],[]];
   TICKETS.forEach(t=>{
     if (!t.launch || t.stage==="Migration Complete" || t.stage==="Closed - Churned/Canceled") return;
     const wb = calWeekBucket(t.launch);
     if (wb < 0) return;
     const b = Math.min(wb,5);
     counts[b]++; compSums[b]+=t.complexity;
+    bucketTickets[b].push(t);
   });
   const avgComp = counts.map((c,i)=> c? (compSums[i]/c).toFixed(1): 0);
+  destroyChart("weeklyChart");
   new Chart(document.getElementById("weeklyChart"), {
     type:"bar",
     data:{ labels, datasets:[
@@ -916,16 +999,47 @@ function renderWeeklyChart(){
     ]},
     options:{ responsive:true, maintainAspectRatio:false,
       scales:{ y:{beginAtZero:true, title:{display:true,text:"Launches"}}, y1:{beginAtZero:true, position:"right", grid:{drawOnChartArea:false}, title:{display:true,text:"Avg complexity"}}},
-      plugins:{legend:{position:"bottom"}} }
+      plugins:{
+        legend:{position:"bottom"},
+        tooltip:{ callbacks:{ label:(ctx)=>{
+          if (ctx.dataset.label !== "Launches") return `${ctx.dataset.label}: ${ctx.parsed.y}`;
+          return [`Launches: ${ctx.parsed.y}`, ...providerNamesForTickets(bucketTickets[ctx.dataIndex])];
+        } } }
+      },
+      onClick:(evt, els)=>{ if(els.length){ const i = els[0].index; openBucketModal(`Launching ${labels[i]}`, bucketTickets[i]); } }
+    },
+    plugins:[barValueLabelPlugin]
   });
+}
+// Short provider list for chart hover tooltips -- full clickable list with HubSpot
+// links lives in the click-through modal (openBucketModal), since Chart.js tooltips
+// can't contain real interactive links.
+function providerNamesForTickets(list, limit=8){
+  if (!list.length) return ["No providers in this bucket"];
+  const names = list.map(t=>t.client);
+  return names.length > limit
+    ? names.slice(0,limit).concat([`+${names.length-limit} more — click bar to see all`])
+    : names;
 }
 function renderSegmentChart(){
   const active = TICKETS.filter(t=>t.stage!=="Migration Complete" && t.stage!=="Closed - Churned/Canceled");
-  const counts = SEGMENTS.map(s=>active.filter(t=>t.segment===s).length);
+  const bySegment = SEGMENTS.map(s=>active.filter(t=>t.segment===s));
+  const counts = bySegment.map(list=>list.length);
+  destroyChart("segmentChart");
   new Chart(document.getElementById("segmentChart"), {
     type:"doughnut",
     data:{ labels:SEGMENTS, datasets:[{data:counts, backgroundColor:SEGMENTS.map(s=>SEG_COLOR[s].dot)}]},
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom", labels:{boxWidth:10, font:{size:10.5}}}} }
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{position:"bottom", labels:{boxWidth:10, font:{size:10.5}}},
+        tooltip:{ callbacks:{ label:(ctx)=>{
+          const seg = SEGMENTS[ctx.dataIndex];
+          return [`${seg}: ${ctx.parsed} migration(s)`, ...providerNamesForTickets(bySegment[ctx.dataIndex])];
+        } } }
+      },
+      onClick:(evt, els)=>{ if(els.length){ const i = els[0].index; openBucketModal(`${SEGMENTS[i]} — Active Migrations`, bySegment[i]); } }
+    },
+    plugins:[pieValueLabelPlugin]
   });
 }
 function changeBadge(t){
@@ -948,9 +1062,19 @@ function renderGmvTable(){
   `).join("");
 }
 function renderLaunchingThisMonth(){
-  const list = TICKETS.filter(t=> t.launch && t.launch.getMonth()===today.getMonth() && t.launch.getFullYear()===today.getFullYear())
-    .sort((a,b)=>a.launch-b.launch);
-  document.getElementById("launchingMonthBody").innerHTML = list.length ? list.map(t=>`
+  // Window is a rolling 60 days forward from today (not calendar-month), per your
+  // request. Excludes churned/canceled tickets entirely; "Migration Complete" tickets
+  // that fall in the window are split into their own section below, not mixed in with
+  // still-launching ones.
+  const inWindow = TICKETS.filter(t=>{
+    if (!t.launch || t.stage==="Closed - Churned/Canceled") return false;
+    const days = daysBetween(today, t.launch);
+    return days !== null && days >= 0 && days <= 60;
+  });
+  const upcoming = inWindow.filter(t=>t.stage!=="Migration Complete").sort((a,b)=>a.launch-b.launch);
+  const completed = inWindow.filter(t=>t.stage==="Migration Complete").sort((a,b)=>a.launch-b.launch);
+
+  const row = t => `
     <tr class="clickable" onclick="toggleExpandRow('${t.id}')">
       <td style="width:16px;">▸</td>
       <td>${t.client}</td>
@@ -958,10 +1082,22 @@ function renderLaunchingThisMonth(){
       <td>${avatarHtml(t.manager)} ${t.manager||"Unassigned"}</td>
       <td>${t.stage}</td>
       <td>${t.complexity}</td>
+      <td>$${(t.gmv/1000).toFixed(0)}K</td>
       <td>${fmt(t.launch)}</td>
+      <td>${changeBadge(t)}</td>
     </tr>
-    <tr id="expand-${t.id}" style="display:none;" class="expand-row"><td colspan="7">${expandContent(t)}</td></tr>
-  `).join("") : `<tr><td colspan="7" style="color:var(--sub)">No launches scheduled this month.</td></tr>`;
+    <tr id="expand-${t.id}" style="display:none;" class="expand-row"><td colspan="9">${expandContent(t)}</td></tr>`;
+
+  let html = upcoming.length
+    ? upcoming.map(row).join("")
+    : `<tr><td colspan="9" style="color:var(--sub)">No launches scheduled in the next 60 days.</td></tr>`;
+
+  if (completed.length){
+    html += `<tr><td colspan="9" style="font-weight:700;padding-top:14px;border-top:2px solid var(--border);color:var(--sub);">Completed Migrations</td></tr>`;
+    html += completed.map(row).join("");
+  }
+
+  document.getElementById("launchingMonthBody").innerHTML = html;
 }
 function expandContent(t){
   return `<div class="exp-grid">
@@ -983,15 +1119,21 @@ window.toggleExpandRow = function(id){
 };
 
 function renderStageChart(){
-  const counts = STAGES.map(s=>TICKETS.filter(t=>t.stage===s).length);
+  const byStage = STAGES.map(s=>TICKETS.filter(t=>t.stage===s));
+  const counts = byStage.map(list=>list.length);
+  destroyChart("stageChart");
   new Chart(document.getElementById("stageChart"), {
     type:"bar",
     data:{ labels:STAGES, datasets:[{label:"Tickets", data:counts, backgroundColor:"#BB8139", borderRadius:4}]},
     options:{ responsive:true, maintainAspectRatio:false,
       scales:{ x:{ ticks:{ font:{size:9.5}, maxRotation:60, minRotation:60 } }, y:{beginAtZero:true} },
-      plugins:{legend:{display:false}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{ callbacks:{ label:(ctx)=> [`Tickets: ${ctx.parsed.y}`, ...providerNamesForTickets(byStage[ctx.dataIndex])] } }
+      },
       onClick:(evt, els)=>{ if(els.length){ const stage = STAGES[els[0].index]; showStageDrilldown(stage); } }
-    }
+    },
+    plugins:[barValueLabelPlugin]
   });
 }
 function renderStageSummary(){
@@ -1045,6 +1187,7 @@ function renderCompletedLog(){
 function renderTrendCharts(){
   const months = MONTHLY_TRENDS.map(m=>m.month);
   const segColors = SEGMENTS.slice(0,6).map(s=>SEG_COLOR[s].dot);
+  destroyChart("volumeTrendChart"); destroyChart("gmvTrendChart"); destroyChart("daysTrendChart");
   new Chart(document.getElementById("volumeTrendChart"), {
     type:"bar",
     data:{ labels:months, datasets: SEGMENTS.slice(0,6).map((seg,i)=>({
@@ -1090,10 +1233,12 @@ function populateFilterOptions(){
   const owners = [...new Set(TICKETS.map(t=>t.ticketOwner).filter(Boolean))];
   document.getElementById("filterOwner").innerHTML = `<option value="all">Ticket Owner: All</option>` + owners.map(o=>`<option value="${o}">${o}</option>`).join("");
   document.getElementById("filterSegment").innerHTML = `<option value="all">Segment: All</option>` + SEGMENTS.map(s=>`<option value="${s}">${s}</option>`).join("");
-  document.getElementById("filterStage").addEventListener("change",e=>{filters.stage=e.target.value; renderCalendar();});
-  document.getElementById("filterOwner").addEventListener("change",e=>{filters.owner=e.target.value; renderCalendar();});
-  document.getElementById("filterSegment").addEventListener("change",e=>{filters.segment=e.target.value; renderCalendar();});
-  document.getElementById("filterLifecycle").addEventListener("change",e=>{filters.lifecycle=e.target.value; renderCalendar();});
+  // .onchange assignment (not addEventListener) so calling this again on "Refresh"
+  // replaces the handler instead of stacking a second one.
+  document.getElementById("filterStage").onchange = e=>{filters.stage=e.target.value; renderCalendar();};
+  document.getElementById("filterOwner").onchange = e=>{filters.owner=e.target.value; renderCalendar();};
+  document.getElementById("filterSegment").onchange = e=>{filters.segment=e.target.value; renderCalendar();};
+  document.getElementById("filterLifecycle").onchange = e=>{filters.lifecycle=e.target.value; renderCalendar();};
 }
 function renderLegend(){
   const items = SEGMENTS.map(s=>`<span class="item">${segDot(s)}${s}</span>`).join("");
@@ -1218,7 +1363,7 @@ window.setTravelDate = function(id, which, value){
 function populateCapManagerFilter(){
   const sel = document.getElementById("filterCapManager");
   sel.innerHTML = `<option value="all">Manager: All</option>` + MANAGERS.map(m=>`<option value="${m.name}">${m.name}</option>`).join("");
-  sel.addEventListener("change", e=>{ capManagerFilter = e.target.value; renderCapacity(); });
+  sel.onchange = e=>{ capManagerFilter = e.target.value; renderCapacity(); };
 }
 function renderCapacity(){
   const weekLabels = [0,1,2,3,4,5].map(b=>{ const mon=mondayOf(today); mon.setDate(mon.getDate()+b*7); return weekLabel(mon); });
@@ -1289,8 +1434,8 @@ window.openManagerDetail = function(name){
 function populatePipelineManagerFilter(){
   const sel = document.getElementById("pipelineManagerFilter");
   sel.innerHTML = `<option value="all">Manager: All</option>` + MANAGERS.map(m=>`<option value="${m.name}">${m.name}</option>`).join("");
-  sel.addEventListener("change", e=>{ pipelineManagerFilter = e.target.value; renderBoard(); });
-  document.getElementById("pipelineSearch").addEventListener("input", e=>{ pipelineSearchQuery = e.target.value.trim().toLowerCase(); renderBoard(); });
+  sel.onchange = e=>{ pipelineManagerFilter = e.target.value; renderBoard(); };
+  document.getElementById("pipelineSearch").oninput = e=>{ pipelineSearchQuery = e.target.value.trim().toLowerCase(); renderBoard(); };
 }
 function pipelineFilteredTickets(){
   return TICKETS.filter(t=>{
@@ -1436,11 +1581,108 @@ document.querySelectorAll("nav.tabs button").forEach(btn=>{
   });
 });
 
-function updateSyncLabel(){
-  document.getElementById("syncLabel").textContent = "Last synced: today 12:00 AM ET (auto-refresh nightly)";
+function updateSyncLabel(lastHubspotSync, lastNotionSync){
+  const label = document.getElementById("syncLabel");
+  const parts = [];
+  if (lastHubspotSync && lastHubspotSync.completedAt) parts.push(`HubSpot ${fmt(new Date(lastHubspotSync.completedAt))}`);
+  if (lastNotionSync && lastNotionSync.completedAt) parts.push(`Notion ${fmt(new Date(lastNotionSync.completedAt))}`);
+  label.textContent = parts.length
+    ? `Last synced: ${parts.join(" · ")} (auto-refresh nightly)`
+    : "Not synced yet — click Refresh, or wait for the nightly sync";
 }
-document.getElementById("refreshBtn").addEventListener("click", ()=>{
-  alert("This will call the HubSpot, Google Calendar, and Notion APIs once connected, then re-render all views with live data.");
+
+// Every render*/populate* call that depends on TICKETS/MANAGERS/NOTION_EMR_TABLE,
+// re-run any time real data loads or changes (initial load + after "Refresh").
+// setupSettingsGate() is deliberately NOT here -- it wires a click listener once,
+// re-running it on every refresh would stack duplicate listeners.
+function renderAll(){
+  renderKpis();
+  renderPracticeSearch();
+  renderWeeklyChart();
+  renderSegmentChart();
+  renderLaunchingThisMonth();
+  renderStageChart();
+  renderStageSummary();
+  renderChangeTable();
+  renderGmvTable();
+  renderCompletedLog();
+  renderTrendCharts();
+  renderPhaseChart();
+  populateFilterOptions();
+  renderLegend();
+  renderCalendarHead();
+  renderCalendar();
+  renderTravel();
+  populateCapManagerFilter();
+  renderCapacity();
+  populatePipelineManagerFilter();
+  renderBoard();
+  renderSettings();
+}
+
+// Converts each date-only "YYYY-MM-DD" string from /api/dashboard/data into the
+// real Date objects every render function expects (parseYmd is defined earlier in
+// this file). Leaves nulls as nulls.
+function hydrateTicketDates(t){
+  return {
+    ...t,
+    launch: parseYmd(t.launch),
+    prevLaunch: parseYmd(t.prevLaunch),
+    changeLoggedDate: parseYmd(t.changeLoggedDate),
+    createDate: parseYmd(t.createDate),
+    scopingDate: parseYmd(t.scopingDate),
+    serviceMenuDate: parseYmd(t.serviceMenuDate),
+    completeDate: parseYmd(t.completeDate),
+  };
+}
+
+async function loadRealData(showAlerts){
+  try {
+    const resp = await fetch("/api/dashboard/data");
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || `/api/dashboard/data returned ${resp.status}`);
+
+    TICKETS = (data.tickets || []).map(hydrateTicketDates);
+    MANAGERS = data.managers || [];
+    NOTION_EMR_TABLE = data.emrTable || [];
+    MONTHLY_TRENDS = computeMonthlyTrends(TICKETS);
+    DAYS_TREND_12MO = computeDaysTrend12Mo(TICKETS);
+    updateSyncLabel(data.lastHubspotSync, data.lastNotionSync);
+
+    if (!TICKETS.length && showAlerts){
+      alert("Connected to Firestore, but no tickets are synced yet. Click Refresh to pull from HubSpot/Notion now, or wait for the nightly sync.");
+    }
+  } catch (err) {
+    console.error("Failed to load dashboard data", err);
+    document.getElementById("syncLabel").textContent = `Couldn't load live data: ${err.message}`;
+    if (showAlerts) alert(`Couldn't load live data from /api/dashboard/data: ${err.message}`);
+  }
+  renderAll();
+}
+
+document.getElementById("refreshBtn").addEventListener("click", async ()=>{
+  const btn = document.getElementById("refreshBtn");
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Syncing…";
+  try {
+    const hsResp = await fetch("/api/hubspot/sync", { method: "POST" });
+    const hsResult = await hsResp.json();
+    if (!hsResp.ok) throw new Error(hsResult.error || "HubSpot sync failed");
+
+    let notionNote = "";
+    const notionResp = await fetch("/api/notion/sync", { method: "POST" });
+    const notionResult = await notionResp.json();
+    if (!notionResp.ok) notionNote = ` Notion sync skipped: ${notionResult.error}`;
+
+    await loadRealData(false);
+    alert(`Synced ${hsResult.companies} companies / ${hsResult.tickets} tickets from HubSpot.${notionNote}`);
+  } catch (err) {
+    alert(`Refresh failed: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
 });
 document.getElementById("runAiBtn").addEventListener("click", ()=>{
   const code = prompt("Enter access code to run AI capacity model:");
@@ -1452,30 +1694,8 @@ document.getElementById("addPersonBtn").addEventListener("click", ()=>{
 });
 
 // ================= INIT =================
-updateSyncLabel();
-renderKpis();
-renderPracticeSearch();
-renderWeeklyChart();
-renderSegmentChart();
-renderLaunchingThisMonth();
-renderStageChart();
-renderStageSummary();
-renderChangeTable();
-renderGmvTable();
-renderCompletedLog();
-renderTrendCharts();
-renderPhaseChart();
-populateFilterOptions();
-renderLegend();
-renderCalendarHead();
-renderCalendar();
-renderTravel();
-populateCapManagerFilter();
-renderCapacity();
-populatePipelineManagerFilter();
-renderBoard();
 setupSettingsGate();
-renderSettings();
+loadRealData(true);
 
 })();
 </script>
